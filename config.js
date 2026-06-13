@@ -1,3 +1,3 @@
 // ====== AYAR ======
 // MUHASEBE Apps Script "Web App" adresini buraya yapıştırın (/exec ile biten).
-window.API_URL = "BURAYA_APPS_SCRIPT_URL_YAPISTIRIN";
+window.API_URL = "https://script.google.com/macros/s/AKfycbzEym1jQZZI6tjByM1hI6pkvHrLlCn9mzwxmNCAq1Cj5YhFqp3T6YjjGFQ6nX9B8kn_/exec";
