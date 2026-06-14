@@ -18,7 +18,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',syste
 .inner{width:100%;height:100%;background:var(--bg);border-radius:41px;overflow:hidden;display:flex;flex-direction:column;position:relative;color:#CFCFCF;}
 .sbar{height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 22px 0;font-size:11px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
 .island{width:58px;height:15px;background:#0e0e0e;border-radius:11px;}
-.scr{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;}.scr::-webkit-scrollbar{width:0;}
+.scr{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;}.scr::-webkit-scrollbar{width:0;}
 .pad{padding:8px 18px 96px;}
 .tap{transition:transform .12s ease;cursor:pointer;}.tap:active{transform:scale(.96);}
 @keyframes su{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -76,8 +76,8 @@ i.ic{display:inline-flex;}i.ic svg{display:block;}
 @keyframes cf{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(.3)}}
 @media (display-mode:standalone),(display-mode:fullscreen),(max-width:560px){
 body{padding:0;background:#111111;align-items:stretch;justify-content:stretch;}
-.phone{width:100%;height:100dvh;max-width:none;border-radius:0;padding:0;box-shadow:none;background:#111111;}
-.inner{border-radius:0;padding-top:env(safe-area-inset-top);}
+.phone{width:100%;height:100vh;height:100svh;max-width:none;border-radius:0;padding:0;box-shadow:none;background:#111111;}
+.inner{border-radius:0;padding-top:calc(env(safe-area-inset-top) + 6px);}
 .sbar{display:none;}
 }
 </style></head>
