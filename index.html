@@ -14,7 +14,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',syste
 .sbar{height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 22px 0;font-size:11px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
 .island{width:58px;height:15px;background:#0e0e0e;border-radius:11px;}
 .scr{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;}.scr::-webkit-scrollbar{width:0;}
-.pad{padding:6px 16px 96px;}
+.pad{padding:6px 16px 104px;}
 .tap{transition:transform .12s ease;cursor:pointer;}.tap:active{transform:scale(.97);}
 @keyframes su{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes sh{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -48,7 +48,7 @@ select.field{appearance:none;-webkit-appearance:none;}
 .tile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 4px;border-radius:15px;background:#202020;border:1px solid #2A2A2A;cursor:pointer;transition:transform .12s;}
 .tile:active{transform:scale(.96);}.tile span{font-size:10px;font-weight:600;color:#CFCFCF;text-align:center;line-height:1.2;}
 i.ic{display:inline-flex;}i.ic svg{display:block;}
-.navwrap{position:absolute;left:0;right:0;bottom:0;height:74px;background:#181818;border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.5);display:flex;align-items:flex-start;padding:10px 14px calc(0px + env(safe-area-inset-bottom));}
+.navwrap{position:absolute;left:0;right:0;bottom:0;min-height:64px;background:#181818;border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.5);display:flex;align-items:flex-start;padding:9px 14px calc(9px + env(safe-area-inset-bottom));}
 .nslot{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}.nslot span{font-size:9.5px;font-weight:600;color:var(--muted);}.nslot.on span{color:var(--red);font-weight:700;}
 .ovl{position:absolute;inset:0;background:rgba(15,15,15,.6);z-index:60;display:flex;align-items:flex-end;animation:fd .2s;}
 .sheet{width:100%;background:#202020;border-radius:24px 24px 0 0;padding:18px 18px 26px;animation:sh .28s cubic-bezier(.2,.8,.2,1);max-height:90%;overflow-y:auto;}
@@ -79,9 +79,10 @@ i.ic{display:inline-flex;}i.ic svg{display:block;}
 .cf{position:absolute;top:50%;left:50%;width:8px;height:8px;border-radius:2px;opacity:0;animation:cf .85s ease-out forwards;}
 @keyframes cf{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(.3)}}
 @media (display-mode:standalone),(display-mode:fullscreen),(max-width:560px){
-body{padding:0;background:#111111;align-items:stretch;justify-content:stretch;}
-.phone{width:100%;height:100vh;height:100svh;max-width:none;border-radius:0;padding:0;box-shadow:none;background:#111111;}
-.inner{border-radius:0;padding-top:calc(env(safe-area-inset-top) + 6px);}
+html{height:100%;overflow:hidden;}
+body{padding:0;background:#111111;align-items:stretch;justify-content:stretch;height:100svh;min-height:0;overflow:hidden;}
+.phone{width:100%;height:100svh;max-width:none;border-radius:0;padding:0;box-shadow:none;background:#111111;}
+.inner{border-radius:0;padding-top:calc(env(safe-area-inset-top) + 8px);}
 .sbar{display:none;}
 }
 </style></head>
@@ -108,6 +109,7 @@ const toISO=v=>{const d=parseDate(v);return d?d.getFullYear()+"-"+String(d.getMo
 const todayISO=()=>toISO(new Date());
 const money=(n,c)=>{c=c||"$";n=n||0;const neg=n<0;return (neg?"-":"")+c+Math.round(Math.abs(n)).toLocaleString("tr-TR");};
 const daysTo=d=>{const x=parseDate(d);if(!x)return null;return Math.round((x-parseDate(new Date()))/86400000);};
+const stripFoto=s=>(s==null?"":String(s)).replace(/\s*\[Foto:[^\]]*\]\s*/g," ").trim();
 function initials(s){s=(s||"").trim();if(!s)return"ER";const p=s.split(/\s+/);return ((p[0]||"")[0]||"")+((p[1]||"")[0]||(p[0]||"")[1]||"");}
 function chip(durum){const d=(durum||"").toLowerCase();
  if(d==="yeni")return '<span class="chip chip-o">'+ic('clock',10)+' Kontrol ediliyor</span>';
@@ -139,17 +141,21 @@ async function api(payload){
  const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body)});
  return await r.json();
 }
-async function load(){
+function saveCache(j){try{localStorage.setItem("ersa_portal_cache",JSON.stringify({kod:S.kod,data:j}));}catch(e){}}
+function readCache(){try{const c=JSON.parse(localStorage.getItem("ersa_portal_cache")||"null");return (c&&c.kod===S.kod)?c.data:null;}catch(e){return null;}}
+async function load(silent){
  if(!window.API_URL||String(API_URL).indexOf("YAPISTIRIN")>=0){S.err="config.js içine portal Apps Script adresini yazın.";render();return;}
- S.loading=true;render();
+ if(!silent){S.loading=true;render();}
  try{const j=await api({action:"data"});
   if(j.ok===false){ if(/kod|şifre|sifre/i.test(j.error||"")){doLogout(true);S.loginErr=j.error;render();return;} throw new Error(j.error||"Hata"); }
-  S.data=j;S.err="";
- }catch(e){S.err="Bağlantı kurulamadı / adres hatalı.";}
- S.loading=false;render();
+  S.data=j;S.err="";saveCache(j);
+ }catch(e){ if(!silent) S.err="Bağlantı kurulamadı / adres hatalı."; }
+ S.loading=false;
+ if(!silent) render();
+ else if(!S.success) render();   // arka plan: kutlama açıkken yeniden çizme (titreme/konfeti olmasın)
 }
 function toast(t){$("toasthost").innerHTML='<div class="toast">'+esc(t)+'</div>';setTimeout(()=>$("toasthost").innerHTML="",2000);}
-function doLogout(silent){try{localStorage.removeItem("ersa_portal_auth");}catch(e){}S.authed=false;S.kod="";S.sifre="";S.data=null;S.tab="home";S.pushed=null;S.sheet=null;if(!silent)render();}
+function doLogout(silent){try{localStorage.removeItem("ersa_portal_auth");localStorage.removeItem("ersa_portal_cache");}catch(e){}S.authed=false;S.kod="";S.sifre="";S.data=null;S.tab="home";S.pushed=null;S.sheet=null;if(!silent)render();}
 
 /* ---------- ANA SAYFA ---------- */
 function homeView(){
@@ -187,7 +193,7 @@ function tekliflerView(){
  const d=S.data||{},list=(d.teklifler||[]);
  const cards=list.map((q,i)=>{const yan=(q.durum||'').toLowerCase().indexOf('yan')===0;
   return '<div class="c tap" data-act="teklifDetay" data-v="'+i+'" style="padding:15px;"><div style="display:flex;justify-content:space-between;align-items:center;">'+chip(q.durum)+'<span style="font-size:10.5px;color:var(--muted2);" class="bignum">'+esc(q.zaman||'')+'</span></div>'
-  +'<div style="font-weight:700;font-size:14px;margin:9px 0 1px;">'+esc(q.urun||'Teklif')+'</div><div class="cs">'+(q.adet?esc(q.adet)+' adet · ':'')+esc((q.aciklama||'').slice(0,40))+'</div>'
+  +'<div style="font-weight:700;font-size:14px;margin:9px 0 1px;">'+esc(stripFoto(q.urun)||'Teklif')+'</div><div class="cs">'+(q.adet?esc(q.adet)+' adet · ':'')+esc(stripFoto(q.aciklama).slice(0,40))+'</div>'
   +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">'+(yan?'<span style="font-size:12px;color:var(--green);font-weight:700;display:inline-flex;align-items:center;gap:5px;">'+ic('check',13,'#2ED573')+' Yanıtlandı</span>':'<span style="font-size:12px;color:var(--muted);font-weight:600;display:inline-flex;align-items:center;gap:5px;">'+ic('clock',13,'#8A8A8A')+' Fiyat hazırlanıyor</span>')+'<span style="font-size:12px;color:var(--red);font-weight:700;">Görüntüle ›</span></div></div>';}).join('');
  return '<div class="pad stg"><div class="h1" style="margin-top:4px;">Teklifler</div><div class="sub">Tekliflerinizi görün veya yeni fiyat isteyin</div>'
  +'<button class="btnred" style="margin-top:13px;" data-act="open" data-v="teklif">'+ic('plus',17,'#fff')+' Makine Fiyat Teklifi Al</button>'
@@ -197,8 +203,8 @@ function teklifDetay(i){
  const q=(S.data.teklifler||[])[i]||{};const yan=(q.durum||'').toLowerCase().indexOf('yan')===0;
  return '<div class="pad stg"><div class="back" data-act="back">'+ic('cl',18)+' Teklifler</div>'
  +'<div style="margin-top:8px;">'+chip(q.durum)+'</div>'
- +'<div class="h1" style="margin:9px 0 2px;">'+esc(q.urun||'Teklif')+'</div><div class="sub bignum">'+esc(q.zaman||'')+(q.adet?' · '+esc(q.adet)+' adet':'')+'</div>'
- +(q.aciklama?'<div class="c" style="padding:14px;margin-top:14px;"><div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted);">TALEP DETAYI</div><div style="font-size:13px;color:#C8C8C4;margin-top:6px;line-height:1.5;word-break:break-word;">'+esc(q.aciklama)+'</div></div>':'')
+ +'<div class="h1" style="margin:9px 0 2px;">'+esc(stripFoto(q.urun)||'Teklif')+'</div><div class="sub bignum">'+esc(q.zaman||'')+(q.adet?' · '+esc(q.adet)+' adet':'')+'</div>'
+ +(stripFoto(q.aciklama)?'<div class="c" style="padding:14px;margin-top:14px;"><div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted);">TALEP DETAYI</div><div style="font-size:13px;color:#C8C8C4;margin-top:6px;line-height:1.5;word-break:break-word;">'+esc(stripFoto(q.aciklama))+'</div></div>':'')
  +'<div class="c" style="padding:22px;margin-top:14px;text-align:center;"><div class="circ" style="width:54px;height:54px;background:'+(yan?'#11271A':'var(--redsoft)')+';margin:0 auto;">'+ic(yan?'check':'clock',26,yan?'#2ED573':'#EDEDED')+'</div>'
   +'<div style="font-weight:700;font-size:16px;margin-top:12px;color:#fff;">'+(yan?'Teklifiniz hazır':'Talebiniz alındı')+'</div>'
   +'<div style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.5;">'+(yan?'Firmamız teklifinizi yanıtladı; detaylar için sizinle iletişime geçeceğiz.':'Ekibimiz makineyi araştırıp fiyat hazırlıyor. Hazır olunca size bildirim göndereceğiz.')+'</div></div>'
@@ -208,7 +214,7 @@ function teklifDetay(i){
 /* ---------- MAKİNE (şifre + servis) ---------- */
 function makineView(){
  const d=S.data||{},sf=(d.sifreler||[]),sv=(d.servisler||[]);
- const sfBlok=sf.length?sf.map(s=>'<div class="c" style="padding:14px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="flex:1;min-width:0;"><div class="ct">'+esc(s.makine||'Makine şifresi')+'</div><div class="cs">'+esc(s.zaman||'')+'</div></div>'+chip(s.durum)+'</div>'+((s.durum==='Verildi'&&s.sifre)?'<div class="codebox"><div style="font-size:9.5px;color:#7fd9a3;letter-spacing:.5px;">MAKİNE ŞİFRENİZ</div><div class="cv">'+esc(s.sifre)+'</div></div>':'')+'</div>').join(''):'<div class="empty">Şifre talebiniz yok.</div>';
+ const sfBlok=sf.length?sf.map(s=>'<div class="c" style="padding:14px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="flex:1;min-width:0;"><div class="ct">'+esc(stripFoto(s.makine)||'Makine şifresi')+'</div><div class="cs">'+esc(s.zaman||'')+'</div></div>'+chip(s.durum)+'</div>'+((s.durum==='Verildi'&&s.sifre)?'<div class="codebox"><div style="font-size:9.5px;color:#7fd9a3;letter-spacing:.5px;">MAKİNE ŞİFRENİZ</div><div class="cv">'+esc(s.sifre)+'</div></div>':'')+'</div>').join(''):'<div class="empty">Şifre talebiniz yok.</div>';
  const svBlok=sv.length?sv.map(s=>'<div class="c" style="padding:15px;margin-bottom:11px;"><div style="display:flex;justify-content:space-between;align-items:center;">'+chip(s.durum)+'<span style="font-size:10.5px;color:var(--muted2);" class="bignum">'+esc(s.zaman||'')+'</span></div><div style="font-weight:700;font-size:14px;margin:9px 0 3px;">'+esc(s.makine||'Servis')+'</div><div style="font-size:12px;color:var(--muted);">'+esc(s.sorun||'')+'</div></div>').join(''):'<div class="empty">Servis kaydınız yok.</div>';
  return '<div class="pad stg"><div class="h1" style="margin-top:4px;">Makine</div><div class="sub">Şifre talepleri ve servis kayıtları</div>'
  +'<div style="display:flex;gap:9px;margin-top:13px;"><button class="btng" style="flex:1;" data-act="open" data-v="sifre">'+ic('lock',16,'#5B8DEF')+' Şifre Al</button><button class="btnred" style="flex:1;" data-act="open" data-v="servis">'+ic('wrench',16,'#fff')+' Servis Aç</button></div>'
@@ -379,7 +385,7 @@ $("app").addEventListener("click",async function(e){
    try{const j=await api({action:"data"});
      if(j.ok===false){S.loginErr=j.error||"Giriş başarısız.";S.kod="";S.sifre="";render();return;}
      if(rem){try{localStorage.setItem("ersa_portal_auth",JSON.stringify({kod:k,sifre:p}));}catch(e2){}}
-     S.data=j;S.authed=true;S.loginErr="";S.tab="home";render();
+     S.data=j;saveCache(j);S.authed=true;S.loginErr="";S.tab="home";render();
    }catch(e3){S.loginErr="Bağlantı kurulamadı.";S.kod="";S.sifre="";render();}}
  else if(a==="bildirsave") await submit("bildirim",{tutar:$("b_tutar").value,pb:$("b_pb").value,tarih:$("b_tar").value,yontem:$("b_yon").value,aciklama:$("b_ack").value.trim()},el,!$("b_tutar").value&&"Tutar girin");
  else if(a==="sifresave")  await submit("sifreTalep",{makine:$("s_mak").value.trim(),photos:(window.PHOTOS||[]).slice()},el,false);
@@ -394,12 +400,12 @@ async function submit(action,data,el,errMsg){
    if(j.ok===false){toast(j.error||"Gönderilemedi");el.style.opacity="1";el.innerHTML=old;return;}
    if(action==="teklifTalep"||action==="sifreTalep")window.PHOTOS=[];
    S.sheet=null;S.success=action;render();
-   try{ await load(); }catch(_){}
+   try{ await load(true); }catch(_){}
  }catch(e){toast("Bağlantı hatası");el.style.opacity="1";el.innerHTML=old;}
 }
 function clk(){const d=new Date();const el=$("clock");if(el)el.textContent=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
 clk();setInterval(clk,30000);
-if(S.authed){load();}else{render();}
+if(S.authed){const c=readCache();if(c){S.data=c;render();load(true);}else{load();}}else{render();}
 </script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
 </body></html>
