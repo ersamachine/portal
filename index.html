@@ -153,6 +153,10 @@ const AY=["OCA","ŞUB","MAR","NİS","MAY","HAZ","TEM","AĞU","EYL","EKİ","KAS",
 function tkParse(v){const d=new Date(v);return isNaN(d)?null:d;}
 function tkDurum(t){if((t.durum||"")==="Ödendi")return"Ödendi";const d=tkParse(t.vade);if(d&&d<new Date(new Date().toDateString()))return"Gecikti";return"Bekliyor";}
 function fmtDate(d){return d?("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2)+"."+d.getFullYear():"";}
+function sonrakiTaksit(){
+ const tk=((S.data&&S.data.taksitler)||[]).map(t=>({t:t,_d:tkParse(t.vade),_du:tkDurum(t)}));
+ return tk.filter(x=>x._du!=="Ödendi").sort((a,b)=>(a._d||0)-(b._d||0))[0]||null;
+}
 function _hx(h){const n=parseInt(h.slice(1),16);return [n>>16&255,n>>8&255,n&255];}
 function tileGrad(h){const c=_hx(h);return 'linear-gradient(135deg,rgba('+c[0]+','+c[1]+','+c[2]+',.22),rgba('+c[0]+','+c[1]+','+c[2]+',.07))';}
 function tileBrd(h){const c=_hx(h);return 'rgba('+c[0]+','+c[1]+','+c[2]+',.3)';}
@@ -384,13 +388,19 @@ function sheetForm(){
   +'<div class="c tap" data-act="chooser" data-v="sifre" style="padding:15px;display:flex;align-items:center;gap:12px;margin-bottom:10px;"><div class="sq" style="background:#192639;">'+ic('lock',19,'#5B8DEF')+'</div><div style="flex:1;"><div class="ct">Makine Şifresi Al</div><div class="cs">Aylık açılış kodunu iste</div></div>'+ic('cr',17,'#777')+'</div>'
   +'<div class="c tap" data-act="chooser" data-v="servis" style="padding:15px;display:flex;align-items:center;gap:12px;"><div class="sq" style="background:#2A1414;">'+ic('wrench',19,'#FF6B5E')+'</div><div style="flex:1;"><div class="ct">Servis / Arıza Kaydı</div><div class="cs">Teknik destek talebi aç</div></div>'+ic('cr',17,'#777')+'</div>'
   +'</div></div>';
- if(S.sheet==="bildir") return wrap("Ödeme Bildir",
+ if(S.sheet==="bildir"){
+   const sn=sonrakiTaksit();
+   const tutarVal=sn?Math.round(sn.t.tutar||0):"";
+   const ipucu=sn?('<div style="font-size:11px;color:var(--gold);margin:-4px 0 12px;font-weight:600;">'+ic((sn._du==="Gecikti"?'alert':'cal'),12,(sn._du==="Gecikti"?'#FF5A5A':'#F5C04A'))+' Taksit '+esc(sn.t.taksit||"")+' · vade '+(fmtDate(sn._d)||esc(sn.t.vade||""))+(sn._du==="Gecikti"?' (gecikmiş)':'')+'</div>'):'';
+   return wrap("Ödeme Bildir",
    odemeBilgiBlok()
-   +'<div class="row2"><div><label class="lbl">Tutar</label><input id="b_tutar" class="field" type="number" inputmode="decimal" placeholder="0"></div><div><label class="lbl">Para Birimi</label><select id="b_pb" class="field"><option>$</option><option>TL</option></select></div></div>'
+   +'<div class="row2"><div><label class="lbl">Tutar</label><input id="b_tutar" class="field" type="number" inputmode="decimal" placeholder="0" value="'+tutarVal+'"></div><div><label class="lbl">Para Birimi</label><select id="b_pb" class="field"><option>$</option><option>TL</option></select></div></div>'
+   +ipucu
    +'<label class="lbl">Ödeme Tarihi (yapılan / planlanan)</label><input id="b_tar" class="field" type="date" value="'+todayISO()+'">'
    +'<label class="lbl">Yöntem</label><select id="b_yon" class="field"><option>Havale/EFT</option><option>Nakit</option><option>Kredi Kartı</option><option>Çek</option></select>'
    +'<label class="lbl">Açıklama (isteğe bağlı)</label><textarea id="b_ack" class="field" style="min-height:58px;resize:vertical;" placeholder="Örn. dekont gönderdim / gelecek hafta ödeyeceğim"></textarea>'
    +'<button class="btnred" data-act="bildirsave">'+ic('send',16,'#fff')+' Bildirimi Gönder</button>');
+ }
  if(S.sheet==="sifre"){
    const ok=S.data&&S.data.odemeBildirdi;
    if(!ok) return wrap("Makine Şifresi",
