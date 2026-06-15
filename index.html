@@ -100,6 +100,9 @@ i.ic{display:inline-flex;}i.ic svg{display:block;}
 .payhero{margin-top:14px;border-radius:18px;overflow:hidden;}
 .payhero .btn{width:100%;border:none;border-radius:13px;padding:12px;font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;-webkit-tap-highlight-color:transparent;}
 .btngold{background:var(--gold);color:#1a1a1a;box-shadow:0 8px 20px rgba(245,166,35,.25);}
+.donut{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hole{width:44px;height:44px;border-radius:50%;background:#202020;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.divr{height:1px;background:#2f2f2f;margin:13px 0 11px;}
 .tlrow{display:flex;gap:13px;position:relative;padding-bottom:20px;}
 .tlrow:last-child{padding-bottom:0;}
 .tldot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:2;font-weight:800;font-size:12px;}
@@ -230,15 +233,12 @@ function homeView(){
  +'</div>'
  +(S.err?'<div class="banner">'+esc(S.err)+'</div>':'')
  +odemeHero()
- +'<div style="margin-top:16px;border-radius:20px;padding:20px 18px;background:#202020;border:1px solid #2C2C2C;">'
-  +'<div style="text-align:center;"><div style="font-size:10px;font-weight:700;letter-spacing:1.4px;color:var(--muted);">GÜNCEL BAKİYE ($)</div><div class="bignum" style="font-size:33px;color:#fff;margin-top:6px;">'+money(Math.abs(o.bakiye||0))+'</div>'
-  +'<div style="font-size:11.5px;color:'+(neg?'#2ED573':'var(--gold)')+';margin-top:4px;font-weight:600;">'+(neg?'Lehinize bakiye':(o.bakiye?'Ödenecek bakiye':'Bakiye yok'))+'</div></div>'
-  +(tot?'<div class="prog"><div style="width:'+oran+'%;"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10.5px;color:var(--muted);"><span>'+odN+'/'+tk.length+' taksit ödendi</span><span>%'+oran+'</span></div>':'')
-  +'<div style="display:flex;justify-content:space-between;margin-top:14px;">'
-   +'<div><div style="font-size:10px;color:var(--muted);">Toplam Fatura</div><div class="bignum" style="font-weight:700;font-size:14px;color:#fff;margin-top:1px;">'+money(o.toplamFatura)+'</div></div>'
-   +'<div style="text-align:right;"><div style="font-size:10px;color:var(--muted);">Tahsilat</div><div class="bignum" style="font-weight:700;font-size:14px;color:var(--green);margin-top:1px;">'+money(o.toplamTahsilat)+'</div></div>'
+ +'<div class="c" style="margin-top:14px;padding:15px 16px;">'
+  +'<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">'
+   +'<div style="min-width:0;"><div style="font-size:9px;font-weight:800;letter-spacing:1px;color:var(--muted);">GÜNCEL BAKİYE ($)</div><div class="bignum" style="font-size:25px;color:#fff;margin-top:4px;">'+money(Math.abs(o.bakiye||0))+'</div><div style="font-size:11px;color:'+(neg?'#2ED573':'var(--gold)')+';font-weight:600;margin-top:2px;">'+(neg?'Lehinize bakiye':(o.bakiye?'Ödenecek bakiye':'Bakiye yok'))+'</div></div>'
+   +(function(){const op=o.toplamFatura?Math.max(0,Math.min(100,Math.round((o.toplamTahsilat/o.toplamFatura)*100))):0;return '<div class="donut" style="background:conic-gradient(#2ED573 0% '+op+'%, #2c2c2c '+op+'% 100%);"><div class="hole"><div class="bignum" style="font-size:14px;color:#fff;">%'+op+'</div><div style="font-size:7.5px;color:var(--muted);letter-spacing:.3px;">ÖDENDİ</div></div></div>';})()
   +'</div>'
-  +'<div class="tap" data-act="push" data-v="cari" style="text-align:center;margin-top:14px;font-size:11px;color:var(--muted);font-weight:600;">Ekstreyi gör ›</div>'
+  +'<div class="divr"></div><div class="tap" data-act="push" data-v="cari" style="font-size:11.5px;color:var(--muted);font-weight:600;">Ekstreyi gör ›</div>'
  +'</div>'
  +(function(){const o=siparisAktif();if(!o)return'';const cur=asamaIx(o.durum);return '<div class="c tap" data-act="push" data-v="siparisler" style="margin-top:14px;padding:16px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);">AKTİF SİPARİŞ</div><span class="chip chip-r">'+ic('truck',10)+' '+esc(o.durum)+'</span></div><div style="font-weight:700;font-size:14.5px;color:#fff;margin-top:8px;">'+esc(o.makine||'Sipariş')+'</div><div class="prog"><div style="width:'+siparisPct(cur)+'%;"></div></div><div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--muted);"><span>'+(cur+1)+'/'+SIPARIS_ASAMA.length+' aşama</span><span>Takip et ›</span></div></div>';})()
  +'<div class="sec">Hızlı İşlemler</div>'
