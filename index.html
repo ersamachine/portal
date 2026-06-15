@@ -79,6 +79,11 @@ i.ic{display:inline-flex;}i.ic svg{display:block;}
 .cf{position:absolute;top:50%;left:50%;width:8px;height:8px;border-radius:2px;opacity:0;animation:cf .85s ease-out forwards;}
 @keyframes cf{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(.3)}}
 .tl{position:relative;}
+.dbadge{width:46px;height:48px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.dbadge .mo{font-size:9px;font-weight:800;letter-spacing:.5px;}
+.dbadge .dy{font-size:17px;font-weight:800;line-height:1;}
+.trow{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #2a2a2a;}
+.trow:last-child{border-bottom:none;}
 .tlrow{display:flex;gap:13px;position:relative;padding-bottom:20px;}
 .tlrow:last-child{padding-bottom:0;}
 .tldot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:2;font-weight:800;font-size:12px;}
@@ -105,7 +110,7 @@ body{padding:0;background:#111111;align-items:stretch;justify-content:stretch;he
 </div></div>
 <script src="config.js"></script>
 <script>
-const P={home:"M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z",file:"M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h8",wrench:"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z",user:"M5 20v-1a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v1M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",bell:"M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0",lock:"M5 11h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM8 11V7a4 4 0 0 1 8 0v4",tag:"M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82zM7 7h.01",wallet:"M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v0H5a2 2 0 0 0-2 2zM3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM16 12.5h3v3h-3a1.5 1.5 0 0 1 0-3z",receipt:"M5 3v18l2-1.5L9 21l2-1.5L13 21l2-1.5L17 21l2-1.5V3l-2 1.5L15 3l-2 1.5L11 3 9 4.5 7 3zM8 8h8M8 12h8",cal:"M4 6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3H4zM4 9h14v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 3v3M14 3v3",cr:"m9 6 6 6-6 6",cl:"m15 6-6 6 6 6",plus:"M12 5v14M5 12h14",x:"M18 6 6 18M6 6l12 12",check:"M21.5 9.5A10 10 0 1 1 16.5 3M22 5 12 14.5l-3-3",clock:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 7v5l3.5 2",refresh:"M21 12a9 9 0 1 1-2.6-6.3M21 4v5h-5",logout:"M16 17l5-5-5-5M21 12H9M12 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6",info:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01",tick:"M20 6 9 17l-5-5",send:"M22 2 11 13M22 2 15 22l-4-9-9-4z",img:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M21 15l-5-5L5 21",box:"M21 8 12 3 3 8m18 0-9 5m9-5v8l-9 5m0-8L3 8m9 5v8M3 8v8l9 5",truck:"M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4M18.5 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4"};
+const P={home:"M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z",file:"M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h8",wrench:"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z",user:"M5 20v-1a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v1M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",bell:"M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0",lock:"M5 11h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM8 11V7a4 4 0 0 1 8 0v4",tag:"M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82zM7 7h.01",wallet:"M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v0H5a2 2 0 0 0-2 2zM3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM16 12.5h3v3h-3a1.5 1.5 0 0 1 0-3z",receipt:"M5 3v18l2-1.5L9 21l2-1.5L13 21l2-1.5L17 21l2-1.5V3l-2 1.5L15 3l-2 1.5L11 3 9 4.5 7 3zM8 8h8M8 12h8",cal:"M4 6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3H4zM4 9h14v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 3v3M14 3v3",cr:"m9 6 6 6-6 6",cl:"m15 6-6 6 6 6",plus:"M12 5v14M5 12h14",x:"M18 6 6 18M6 6l12 12",check:"M21.5 9.5A10 10 0 1 1 16.5 3M22 5 12 14.5l-3-3",clock:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 7v5l3.5 2",refresh:"M21 12a9 9 0 1 1-2.6-6.3M21 4v5h-5",logout:"M16 17l5-5-5-5M21 12H9M12 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6",info:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01",tick:"M20 6 9 17l-5-5",send:"M22 2 11 13M22 2 15 22l-4-9-9-4z",img:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M21 15l-5-5L5 21",box:"M21 8 12 3 3 8m18 0-9 5m9-5v8l-9 5m0-8L3 8m9 5v8M3 8v8l9 5",truck:"M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4M18.5 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4",alert:"M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"};
 function ic(n,s,col){const d=P[n];if(!d)return"";return '<svg width="'+(s||16)+'" height="'+(s||16)+'" viewBox="0 0 24 24" fill="none" stroke="'+(col||'currentColor')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+d.split('M').filter(Boolean).map(p=>'<path d="M'+p+'"/>').join('')+'</svg>';}
 
 const S={tab:"home",pushed:null,sheet:null,success:null,authed:false,kod:"",sifre:"",data:null,loading:false,err:"",loginErr:""};
@@ -125,6 +130,10 @@ const SIPARIS_ASAMA=["Sipariş Onaylandı","Tedarik / Üretim","Çin'den Sevkiya
 const asamaIx=d=>{const i=SIPARIS_ASAMA.indexOf((d||"").trim());return i<0?0:i;};
 const siparisPct=cur=>Math.round(cur/(SIPARIS_ASAMA.length-1)*100);
 const siparisAktif=()=>{const l=(S.data&&S.data.siparisler)||[];return l.find(o=>asamaIx(o.durum)<SIPARIS_ASAMA.length-1)||null;};
+const AY=["OCA","ŞUB","MAR","NİS","MAY","HAZ","TEM","AĞU","EYL","EKİ","KAS","ARA"];
+function tkParse(v){const d=new Date(v);return isNaN(d)?null:d;}
+function tkDurum(t){if((t.durum||"")==="Ödendi")return"Ödendi";const d=tkParse(t.vade);if(d&&d<new Date(new Date().toDateString()))return"Gecikti";return"Bekliyor";}
+function fmtDate(d){return d?("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2)+"."+d.getFullYear():"";}
 function initials(s){s=(s||"").trim();if(!s)return"ER";const p=s.split(/\s+/);return ((p[0]||"")[0]||"")+((p[1]||"")[0]||(p[0]||"")[1]||"");}
 function chip(durum){const d=(durum||"").toLowerCase();
  if(d==="yeni")return '<span class="chip chip-o">'+ic('clock',10)+' Kontrol ediliyor</span>';
@@ -179,7 +188,7 @@ function homeView(){
  const odN=tk.filter(t=>t.durum==="Ödendi").length;const oran=tot?Math.round(od/tot*100):0;
  const ek=(d.ekstre||[]).slice(-3).reverse();
  const acikTeklif=(d.teklifler||[]).length;
- const tiles=[['wallet','Ödeme Bildir','#2ED573','open','bildir'],['wrench','Makine','#5B8DEF','open','makineChooser'],['tag','Fiyat Teklifi','#F5A623','open','teklif'],['box','Siparişlerim','#FF6B5E','push','siparisler'],['receipt','Ekstre','#9CA3AF','push','cari'],['cal','Taksitler','#C084FC','push','cari']];
+ const tiles=[['wallet','Ödeme Bildir','#2ED573','open','bildir'],['wrench','Makine','#5B8DEF','open','makineChooser'],['tag','Fiyat Teklifi','#F5A623','open','teklif'],['box','Siparişlerim','#FF6B5E','push','siparisler'],['receipt','Ekstre','#9CA3AF','push','cari'],['cal','Taksitler','#C084FC','push','taksitler']];
  return '<div class="pad stg">'
  +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">'
   +'<div style="display:flex;align-items:center;gap:11px;min-width:0;"><div class="circ" style="width:42px;height:42px;background:var(--red);color:#fff;font-weight:800;font-size:14px;">'+esc(initials(d.firma).toUpperCase())+'</div><div style="min-width:0;"><div style="font-size:12px;color:var(--muted);">Hoş geldiniz,</div><div style="font-weight:700;font-size:15px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;">'+esc(d.firma||"")+'</div></div></div>'
@@ -227,6 +236,34 @@ function teklifDetay(i){
  +'</div>';
 }
 
+/* ---------- TAKSİT PLANI ---------- */
+function taksitlerView(){
+ const d=S.data||{};
+ let tk=(d.taksitler||[]).slice();
+ tk.forEach(t=>{ t._d=tkParse(t.vade); t._du=tkDurum(t); });
+ tk.sort((a,b)=>(a._d||0)-(b._d||0));
+ const tot=tk.reduce((s,t)=>s+(t.tutar||0),0);
+ const od=tk.filter(t=>t._du==="Ödendi").reduce((s,t)=>s+(t.tutar||0),0);
+ const kalan=tot-od, odSay=tk.filter(t=>t._du==="Ödendi").length, oran=tot?Math.round(od/tot*100):0;
+ const sonraki=tk.find(t=>t._du!=="Ödendi");
+ const planNot=((d.taksitNot)||"").trim();
+ const badge=t=>{let bg,mo,dy;if(t._du==="Ödendi"){bg="#16331F";mo="#5fd08a";dy="#cfeede";}else if(t._du==="Gecikti"){bg="#2A1414";mo="#FF8A80";dy="#fff";}else{bg="#2A2410";mo="#F5C04A";dy="#fff";}
+   const moTxt=t._d?AY[t._d.getMonth()]:"—", dyTxt=t._d?("0"+t._d.getDate()).slice(-2):"–";
+   return '<div class="dbadge" style="background:'+bg+';"><div class="mo" style="color:'+mo+';">'+moTxt+'</div><div class="dy" style="color:'+dy+';">'+dyTxt+'</div></div>';};
+ const chp=t=>t._du==="Ödendi"?'<span class="chip chip-g">'+ic('check',10)+' Ödendi</span>':(t._du==="Gecikti"?'<span class="chip chip-r">'+ic('alert',10)+' Gecikti</span>':'<span class="chip chip-o">'+ic('clock',10)+' Bekliyor</span>');
+ const trow=t=>'<div class="trow">'+badge(t)+'<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13.5px;color:#fff;">Taksit '+esc(t.taksit||"")+'</div><div style="font-size:11px;color:var(--muted);margin-top:1px;">Vade: '+(fmtDate(t._d)||esc(t.vade||"-"))+(t._du==="Ödendi"&&t.odemeTarihi?' · ödendi '+esc(t.odemeTarihi):'')+'</div></div><div style="text-align:right;"><div class="bignum" style="font-size:13.5px;color:'+(t._du==="Ödendi"?"#8A8A8A":"#fff")+';">'+money(t.tutar)+'</div><div style="margin-top:3px;">'+chp(t)+'</div></div></div>';
+ return '<div class="pad stg"><div class="back" data-act="back">'+ic('cl',18)+' Geri</div>'
+ +'<div class="h1" style="margin-top:8px;">Taksit Planı</div><div class="sub">'+(tk.length?tk.length+' taksit':'Tanımlı taksit yok')+'</div>'
+ +(tk.length?(
+   '<div class="blk" style="padding:18px;margin-top:14px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div style="font-size:10px;color:#9b9b95;letter-spacing:1px;">KALAN TAKSİT BORCU</div><div class="bignum" style="font-size:27px;color:#fff;margin-top:4px;">'+money(kalan)+'</div></div><div style="text-align:right;"><div style="font-size:10px;color:#9b9b95;">Taksit Tutarı</div><div class="bignum" style="font-size:14px;color:#cfcfcf;">'+money(tot)+'</div><div style="font-size:9px;color:var(--muted2);margin-top:2px;">taksitlendirilen kısım</div></div></div>'
+   +'<div class="prog"><div style="width:'+oran+'%;"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--muted);"><span>'+odSay+'/'+tk.length+' taksit ödendi · '+money(od)+'</span><span>%'+oran+'</span></div></div>'
+   +(planNot?'<div style="margin-top:12px;background:linear-gradient(135deg,#C51515,#9b1010);border-radius:12px;padding:11px 13px;display:flex;gap:9px;align-items:flex-start;box-shadow:0 6px 16px rgba(197,21,21,.35);">'+ic('info',16,'#fff')+'<div style="min-width:0;"><div style="font-size:8.5px;color:#FFD6D6;font-weight:800;letter-spacing:.6px;margin-bottom:3px;">PLAN NOTU</div><div style="font-size:11.5px;color:#fff;font-weight:600;line-height:1.5;">'+esc(planNot)+'</div></div></div>':'')
+   +(sonraki?'<div class="c" style="margin-top:12px;padding:14px;display:flex;align-items:center;gap:12px;border-left:4px solid '+(sonraki._du==="Gecikti"?"#C51515":"#F5A623")+';">'+ic(sonraki._du==="Gecikti"?'alert':'cal',20,sonraki._du==="Gecikti"?"#FF5A5A":"#F5C04A")+'<div style="flex:1;min-width:0;"><div style="font-size:9px;font-weight:800;letter-spacing:.6px;color:'+(sonraki._du==="Gecikti"?"#FF8A80":"#F5C04A")+';">'+(sonraki._du==="Gecikti"?"GECİKMİŞ ÖDEME":"SONRAKİ ÖDEME")+'</div><div style="font-weight:700;font-size:14px;color:#fff;margin-top:2px;">Taksit '+esc(sonraki.taksit||"")+' · '+(fmtDate(sonraki._d)||esc(sonraki.vade||""))+'</div></div><div class="bignum" style="font-size:16px;color:#fff;">'+money(sonraki.tutar)+'</div></div>':'')
+   +'<div class="sec">Ödeme Planı</div><div class="c" style="padding:4px 15px;">'+tk.map(trow).join('')+'</div>'
+ ):'<div class="c" style="padding:22px;margin-top:14px;text-align:center;color:var(--muted);">Henüz taksit planınız tanımlı değil.</div>')
+ +'</div>';
+}
+
 /* ---------- SİPARİŞLER ---------- */
 function siparislerView(){
  const list=(S.data.siparisler||[]);
@@ -266,11 +303,9 @@ function cariView(){
  const d=S.data||{},o=d.ozet||{};const list=(d.ekstre||[]);let bak=0;
  const rows=list.map(h=>{bak+=(h.borc||0)-(h.alacak||0);const isF=(h.borc||0)>0;
   return '<div class="lrow"><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;">'+esc(h.tip)+' <span style="color:var(--muted);font-weight:600;">· '+fmtD(h.tarih)+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:1px;">'+esc(h.aciklama||'')+'</div></div><div style="text-align:right;"><div class="bignum" style="font-size:13px;color:'+(isF?'#FF6B5E':'#2ED573')+';">'+(isF?'+':'−')+money(isF?h.borc:h.alacak)+'</div><div style="font-size:9px;color:var(--muted);">ara ' + money(bak)+'</div></div></div>';}).join("");
- const tk=(d.taksitler||[]);const tot=tk.reduce((s,t)=>s+(t.tutar||0),0),od=tk.filter(t=>t.durum==="Ödendi").reduce((s,t)=>s+(t.tutar||0),0);const oran=tot?Math.round(od/tot*100):0;
  const bil=(d.bildirimler||[]);
  return '<div class="pad stg"><div class="back" data-act="back">'+ic('cl',18)+' Geri</div>'
  +'<div class="blk" style="padding:18px;margin-top:6px;text-align:center;"><div style="font-size:10px;color:#9b9b95;letter-spacing:1px;">GÜNCEL BAKİYE ($)</div><div class="bignum" style="font-size:30px;color:#fff;margin-top:5px;">'+money(Math.abs(o.bakiye||0))+'</div><div style="display:flex;justify-content:center;gap:24px;margin-top:14px;"><div><div style="font-size:10px;color:#9b9b95;">Fatura</div><div class="bignum" style="font-weight:700;font-size:14px;color:#fff;">'+money(o.toplamFatura)+'</div></div><div><div style="font-size:10px;color:#9b9b95;">Tahsilat</div><div class="bignum" style="font-weight:700;font-size:14px;color:var(--green);">'+money(o.toplamTahsilat)+'</div></div></div></div>'
- +(tot?'<div class="sec">Taksit Durumu</div><div class="c" style="padding:15px;"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);"><span>'+tk.filter(t=>t.durum==="Ödendi").length+' / '+tk.length+' ödendi</span><span>%'+oran+'</span></div><div class="prog"><div style="width:'+oran+'%;"></div></div></div>':'')
  +'<div class="sec">Ekstre</div><div class="c" style="padding:2px 15px 8px;">'+(rows||'<div class="empty">Hareket yok.</div>')+'</div>'
  +(bil.length?'<div class="sec">Ödeme Bildirimlerim</div><div class="c" style="padding:2px 15px 8px;">'+bil.map(b=>'<div class="lrow"><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;">'+money(b.tutar,b.pb==='TL'?'₺':'$')+' · '+esc(b.yontem||'')+'</div><div style="font-size:11px;color:var(--muted);">'+esc(b.zaman||'')+'</div></div>'+chip(b.durum)+'</div>').join('')+'</div>':'')
  +'</div>';
@@ -292,6 +327,7 @@ function hesapView(){
  +'<div class="c" style="padding:16px;margin-top:13px;display:flex;align-items:center;gap:12px;"><div class="circ" style="width:46px;height:46px;background:var(--red);color:#fff;font-weight:800;font-size:16px;">'+esc(initials(d.firma).toUpperCase())+'</div><div style="min-width:0;"><div style="font-weight:700;font-size:15px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px;">'+esc(d.firma||'')+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px;">Müşteri Portalı</div></div></div>'
  +'<div class="sec">İşlemler</div>'
  +item('Cari Hesabım & Ekstre','wallet','push','cari')
+ +item('Taksit Planım','cal','push','taksitler')
  +item('Bildirimler','bell','push','bildirimler')
  +item('Tekliflerim','file','tab','teklifler')
  +item('Makine (Şifre / Servis)','wrench','tab','makine')
@@ -378,7 +414,7 @@ function render(){
  if(!S.authed){renderLogin();return;}
  let h;
  if(S.loading||!S.data){h='<div class="pad"><div class="empty" style="padding-top:150px;">'+ic('refresh',30,'#5A5A5A')+'<div style="margin-top:10px;">Yükleniyor…</div></div></div>';}
- else if(S.pushed){const p=S.pushed;h=p.t==='bildirimler'?bildirimlerView():p.t==='cari'?cariView():p.t==='teklifDetay'?teklifDetay(p.v):p.t==='siparisler'?siparislerView():p.t==='siparisDetay'?siparisDetay(p.v):homeView();}
+ else if(S.pushed){const p=S.pushed;h=p.t==='bildirimler'?bildirimlerView():p.t==='cari'?cariView():p.t==='taksitler'?taksitlerView():p.t==='teklifDetay'?teklifDetay(p.v):p.t==='siparisler'?siparislerView():p.t==='siparisDetay'?siparisDetay(p.v):homeView();}
  else h=({home:homeView,teklifler:tekliflerView,makine:makineView,hesap:hesapView}[S.tab]||homeView)();
  $("scr").innerHTML=h;
  $("navhost").innerHTML=(S.data&&!S.loading)?nav():"";
