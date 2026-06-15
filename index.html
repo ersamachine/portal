@@ -120,6 +120,7 @@ body{padding:0;background:#111111;align-items:stretch;justify-content:stretch;he
 .inner{border-radius:0;padding-top:calc(env(safe-area-inset-top) + 8px);}
 .sbar{display:none;}
 }
+@media print{ body{background:#fff!important;} body *{visibility:hidden!important;} #makbuzPrint, #makbuzPrint *{visibility:visible!important;} #makbuzPrint{position:absolute!important;left:0;top:0;width:100%;box-shadow:none!important;} .navwrap,.back,.btnred{display:none!important;} }
 </style></head>
 <body>
 <div class="phone"><div class="inner" id="app">
@@ -129,7 +130,7 @@ body{padding:0;background:#111111;align-items:stretch;justify-content:stretch;he
 </div></div>
 <script src="config.js"></script>
 <script>
-const P={home:"M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z",file:"M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h8",wrench:"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z",user:"M5 20v-1a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v1M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",bell:"M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0",lock:"M5 11h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM8 11V7a4 4 0 0 1 8 0v4",tag:"M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82zM7 7h.01",wallet:"M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v0H5a2 2 0 0 0-2 2zM3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM16 12.5h3v3h-3a1.5 1.5 0 0 1 0-3z",receipt:"M5 3v18l2-1.5L9 21l2-1.5L13 21l2-1.5L17 21l2-1.5V3l-2 1.5L15 3l-2 1.5L11 3 9 4.5 7 3zM8 8h8M8 12h8",cal:"M4 6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3H4zM4 9h14v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 3v3M14 3v3",cr:"m9 6 6 6-6 6",cl:"m15 6-6 6 6 6",plus:"M12 5v14M5 12h14",x:"M18 6 6 18M6 6l12 12",check:"M21.5 9.5A10 10 0 1 1 16.5 3M22 5 12 14.5l-3-3",clock:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 7v5l3.5 2",refresh:"M21 12a9 9 0 1 1-2.6-6.3M21 4v5h-5",logout:"M16 17l5-5-5-5M21 12H9M12 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6",info:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01",tick:"M20 6 9 17l-5-5",send:"M22 2 11 13M22 2 15 22l-4-9-9-4z",img:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M21 15l-5-5L5 21",box:"M21 8 12 3 3 8m18 0-9 5m9-5v8l-9 5m0-8L3 8m9 5v8M3 8v8l9 5",truck:"M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4M18.5 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4",alert:"M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z",copy:"M9 9h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2zM5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"};
+const P={home:"M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z",file:"M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h8",wrench:"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z",user:"M5 20v-1a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v1M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",bell:"M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0",lock:"M5 11h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM8 11V7a4 4 0 0 1 8 0v4",tag:"M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82zM7 7h.01",wallet:"M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v0H5a2 2 0 0 0-2 2zM3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM16 12.5h3v3h-3a1.5 1.5 0 0 1 0-3z",receipt:"M5 3v18l2-1.5L9 21l2-1.5L13 21l2-1.5L17 21l2-1.5V3l-2 1.5L15 3l-2 1.5L11 3 9 4.5 7 3zM8 8h8M8 12h8",cal:"M4 6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3H4zM4 9h14v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 3v3M14 3v3",cr:"m9 6 6 6-6 6",cl:"m15 6-6 6 6 6",plus:"M12 5v14M5 12h14",x:"M18 6 6 18M6 6l12 12",check:"M21.5 9.5A10 10 0 1 1 16.5 3M22 5 12 14.5l-3-3",clock:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 7v5l3.5 2",refresh:"M21 12a9 9 0 1 1-2.6-6.3M21 4v5h-5",logout:"M16 17l5-5-5-5M21 12H9M12 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6",info:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01",tick:"M20 6 9 17l-5-5",send:"M22 2 11 13M22 2 15 22l-4-9-9-4z",img:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M21 15l-5-5L5 21",box:"M21 8 12 3 3 8m18 0-9 5m9-5v8l-9 5m0-8L3 8m9 5v8M3 8v8l9 5",truck:"M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4M18.5 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4",alert:"M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z",copy:"M9 9h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2zM5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1",dl:"M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"};
 function ic(n,s,col){const d=P[n];if(!d)return"";return '<svg width="'+(s||16)+'" height="'+(s||16)+'" viewBox="0 0 24 24" fill="none" stroke="'+(col||'currentColor')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+d.split('M').filter(Boolean).map(p=>'<path d="M'+p+'"/>').join('')+'</svg>';}
 
 const S={tab:"home",pushed:null,sheet:null,success:null,authed:false,kod:"",sifre:"",data:null,loading:false,err:"",loginErr:""};
@@ -350,6 +351,55 @@ function cariView(){
  +'</div>';
 }
 
+/* ---------- ÖDEMELERİM + MAKBUZ ---------- */
+function isoTR(s){ s=String(s||""); const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s); return m?(m[3]+"."+m[2]+"."+m[1]):s; }
+function makbuzNo(b,len,i){ const y=(String(b.tarih||b.zaman||"").slice(0,4))||new Date().getFullYear(); const seq=("000"+(len-i)).slice(-4); return "ERSA-"+y+"-"+seq; }
+function kaseSVG(px,tarih){
+ return '<svg viewBox="0 0 200 200" width="'+px+'" height="'+px+'" style="transform:rotate(-13deg);opacity:.82;">'
+ +'<defs><path id="kp_t" d="M 100,100 m -78,0 a 78,78 0 1,1 156,0"/><path id="kp_b" d="M 100,100 m -78,0 a 78,78 0 1,0 156,0"/></defs>'
+ +'<circle cx="100" cy="100" r="95" fill="none" stroke="#C51515" stroke-width="4"/>'
+ +'<circle cx="100" cy="100" r="68" fill="none" stroke="#C51515" stroke-width="1.5"/>'
+ +'<text fill="#C51515" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="400" letter-spacing="3"><textPath href="#kp_t" startOffset="50%" text-anchor="middle">ERSA MACHINERY</textPath></text>'
+ +'<text fill="#C51515" font-family="Arial,Helvetica,sans-serif" font-size="11.5" font-weight="400" letter-spacing="2.5"><textPath href="#kp_b" startOffset="50%" text-anchor="middle">ÖDEME MAKBUZU</textPath></text>'
+ +'<text x="20" y="106" fill="#C51515" font-size="13" text-anchor="middle">★</text>'
+ +'<text x="180" y="106" fill="#C51515" font-size="13" text-anchor="middle">★</text>'
+ +'<text x="100" y="95" text-anchor="middle" fill="#C51515" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="18" letter-spacing=".5">ONAYLANDI</text>'
+ +'<text x="100" y="118" text-anchor="middle" fill="#C51515" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="13">'+esc(tarih)+'</text>'
+ +'</svg>';
+}
+function odemelerimView(){
+ const bil=((S.data&&S.data.bildirimler)||[]);
+ const cur=b=>b.pb==='TL'?'₺':'$';
+ const cards=bil.map((b,i)=>{const ok=(b.durum==="Onaylandı");const red=(b.durum==="Reddedildi");
+   const cip=ok?'<span class="chip chip-g">'+ic('check',10)+' Onaylandı</span>':(red?'<span class="chip chip-r">'+ic('x',10)+' Reddedildi</span>':'<span class="chip chip-o">'+ic('clock',10)+' İncelemede</span>');
+   return '<div class="c" style="padding:14px;margin-bottom:11px;"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="min-width:0;"><div class="bignum" style="font-size:17px;color:#fff;">'+money(b.tutar,cur(b))+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">'+esc(isoTR(b.tarih)||b.zaman||'')+' · '+esc(b.yontem||'')+'</div></div>'+cip+'</div>'
+   +(ok?'<button class="btn" style="background:#16331F;color:#5fd08a;margin-top:11px;border:none;border-radius:12px;padding:10px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:7px;width:100%;" data-act="makbuz" data-v="'+i+'">'+ic('receipt',15,'#5fd08a')+' Makbuzu Gör</button>':'')
+   +'</div>';}).join('');
+ return '<div class="pad stg"><div class="back" data-act="back">'+ic('cl',18)+' Geri</div>'
+ +'<div class="h1" style="margin-top:8px;">Ödemelerim</div><div class="sub">Bildirdiğiniz ödemeler ve onay durumu</div>'
+ +'<div style="margin-top:14px;">'+(cards||'<div class="c" style="padding:22px;text-align:center;color:var(--muted);">Henüz ödeme bildiriminiz yok. Ana sayfadan "Ödeme Bildir" ile bildirebilirsiniz.</div>')+'</div></div>';
+}
+function makbuzView(i){
+ const bil=((S.data&&S.data.bildirimler)||[]); const b=bil[i];
+ if(!b) return '<div class="pad stg"><div class="back" data-act="push" data-v="odemelerim">'+ic('cl',18)+' Geri</div><div class="c" style="padding:22px;margin-top:12px;text-align:center;color:var(--muted);">Makbuz bulunamadı.</div></div>';
+ if(b.durum!=="Onaylandı") return '<div class="pad stg"><div class="back" data-act="push" data-v="odemelerim">'+ic('cl',18)+' Geri</div><div class="c" style="padding:22px;margin-top:12px;text-align:center;color:var(--muted);">Bu ödeme henüz onaylanmadı.</div></div>';
+ const cur=b.pb==='TL'?'₺':'$'; const trh=isoTR(b.tarih)||((b.zaman||'').slice(0,10)); const no=makbuzNo(b,bil.length,i);
+ const firma=(S.data&&S.data.firma)||"";
+ const r=(k,v)=>'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:12.5px;"><span style="color:#999;">'+k+'</span><span style="color:#222;font-weight:600;">'+esc(v)+'</span></div>';
+ return '<div class="pad stg"><div class="back" data-act="push" data-v="odemelerim">'+ic('cl',18)+' Geri</div>'
+ +'<div id="makbuzPrint" style="margin-top:12px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5);position:relative;">'
+  +'<div style="background:#161616;padding:18px;text-align:center;"><img src="logo-white.png" alt="ERSA" style="height:24px;width:auto;display:inline-block;"><div style="color:#9a9a9a;font-size:10px;margin-top:6px;letter-spacing:2px;">ÖDEME MAKBUZU</div></div>'
+  +'<div style="position:absolute;top:66px;right:8px;pointer-events:none;">'+kaseSVG(120,trh)+'</div>'
+  +'<div style="padding:22px 20px 8px;"><div style="font-size:11px;color:#999;">TUTAR</div><div style="font-size:30px;font-weight:800;color:#161616;font-variant-numeric:tabular-nums;">'+money(b.tutar,cur)+'</div></div>'
+  +'<div style="padding:4px 20px;">'+r("Müşteri",firma)+r("Ödeme Tarihi",trh)+r("Yöntem",b.yontem||"-")+r("Makbuz No",no)+'<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:12.5px;"><span style="color:#999;">Durum</span><span style="color:#1F9D52;font-weight:700;">Onaylandı ✓</span></div></div>'
+  +'<div style="height:14px;position:relative;"><div style="position:absolute;left:0;right:0;top:50%;border-top:2px dashed #e4e4e4;"></div></div>'
+  +'<div style="padding:12px 20px 20px;"><div style="font-size:11px;color:#999;text-align:center;line-height:1.5;">Bu makbuz ödemenizin tarafımıza ulaştığını teyit eder.</div></div>'
+ +'</div>'
+ +'<button class="btnred" style="margin-top:14px;" data-act="makbuzyazdir">'+ic('dl',16,'#fff')+' Makbuzu Paylaş / Kaydet</button>'
+ +'</div>';
+}
+
+
 /* ---------- BİLDİRİMLER ---------- */
 function bildirimlerView(){
  const N=buildNotifs();
@@ -366,6 +416,7 @@ function hesapView(){
  +'<div class="c" style="padding:16px;margin-top:13px;display:flex;align-items:center;gap:12px;"><div class="circ" style="width:46px;height:46px;background:var(--red);color:#fff;font-weight:800;font-size:16px;">'+esc(initials(d.firma).toUpperCase())+'</div><div style="min-width:0;"><div style="font-weight:700;font-size:15px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px;">'+esc(d.firma||'')+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px;">Müşteri Portalı</div></div></div>'
  +'<div class="sec">İşlemler</div>'
  +item('Cari Hesabım & Ekstre','wallet','push','cari')
+ +item('Ödemelerim & Makbuzlar','receipt','push','odemelerim')
  +item('Taksit Planım','cal','push','taksitler')
  +item('Bildirimler','bell','push','bildirimler')
  +item('Tekliflerim','file','tab','teklifler')
@@ -467,7 +518,7 @@ function render(){
  if(!S.authed){renderLogin();return;}
  let h;
  if(S.loading||!S.data){h='<div class="pad"><div class="empty" style="padding-top:150px;">'+ic('refresh',30,'#5A5A5A')+'<div style="margin-top:10px;">Yükleniyor…</div></div></div>';}
- else if(S.pushed){const p=S.pushed;h=p.t==='bildirimler'?bildirimlerView():p.t==='cari'?cariView():p.t==='taksitler'?taksitlerView():p.t==='teklifDetay'?teklifDetay(p.v):p.t==='siparisler'?siparislerView():p.t==='siparisDetay'?siparisDetay(p.v):homeView();}
+ else if(S.pushed){const p=S.pushed;h=p.t==='bildirimler'?bildirimlerView():p.t==='cari'?cariView():p.t==='taksitler'?taksitlerView():p.t==='odemelerim'?odemelerimView():p.t==='makbuz'?makbuzView(p.v):p.t==='teklifDetay'?teklifDetay(p.v):p.t==='siparisler'?siparislerView():p.t==='siparisDetay'?siparisDetay(p.v):homeView();}
  else h=({home:homeView,teklifler:tekliflerView,makine:makineView,hesap:hesapView}[S.tab]||homeView)();
  $("scr").innerHTML=h;
  $("navhost").innerHTML=(S.data&&!S.loading)?nav():"";
@@ -500,6 +551,8 @@ $("app").addEventListener("click",async function(e){
  else if(a==="back"){S.pushed=null;render();}
  else if(a==="teklifDetay"){S.pushed={t:"teklifDetay",v:+v};render();}
  else if(a==="siparisDetay"){S.pushed={t:"siparisDetay",v:+v};render();}
+ else if(a==="makbuz"){S.pushed={t:"makbuz",v:+v};render();}
+ else if(a==="makbuzyazdir"){try{window.print();}catch(e){toast("Yazdırma açılamadı");}}
  else if(a==="open"){if(v==="teklif"||v==="sifre")window.PHOTOS=[];S.sheet=v;render();}
  else if(a==="chooser"){if(v==="sifre")window.PHOTOS=[];S.sheet=v;render();}
  else if(a==="close"){S.sheet=null;render();}
