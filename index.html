@@ -135,6 +135,7 @@ function ic(n,s,col){const d=P[n];if(!d)return"";return '<svg width="'+(s||16)+'
 
 const S={tab:"home",pushed:null,sheet:null,success:null,authed:false,kod:"",sifre:"",data:null,loading:false,err:"",loginErr:""};
 try{const a=JSON.parse(localStorage.getItem("ersa_portal_auth")||"null");if(a&&a.kod){S.kod=a.kod;S.sifre=a.sifre;S.authed=true;}}catch(e){}
+try{var _h=location.hash||"";var _m=_h.match(/[#&]k=([^&]+)&s=([^&]+)/);if(_m){S.kod=decodeURIComponent(_m[1]);S.sifre=decodeURIComponent(_m[2]);S.authed=true;try{history.replaceState(null,"",location.pathname+location.search);}catch(_e){location.hash="";}}}catch(e){}
 window.PHOTOS=[];
 
 const $=s=>document.getElementById(s);
