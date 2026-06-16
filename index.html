@@ -54,6 +54,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',syste
 .payform .field{margin-bottom:0;}
 .payform .amt{margin-bottom:0;}
 .payform .btnred{margin-top:16px;}
+.seg{display:flex;background:#141414;border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;}
+.seg .opt2{flex:1;text-align:center;padding:11px 6px;border-radius:9px;font-weight:700;font-size:14px;color:var(--muted);cursor:pointer;transition:.15s;border:none;background:transparent;}
+.two{display:flex;gap:10px;}
+.two>div{flex:1;min-width:0;}
+.payform .two{margin-top:13px;}
+.payform .two .lbl{margin-top:0;}
+.payform .c{margin-top:13px;}
 .field::placeholder{color:var(--muted2);}
 select.field{appearance:none;-webkit-appearance:none;}
 .lbl{display:block;font-size:12.5px;font-weight:700;color:#C8C8C4;margin:0 0 6px;}
@@ -515,7 +522,7 @@ function odemeBilgiBlok(){
  var ibans=ob.filter(function(x){return isIban(x.deger);});
  var others=ob.filter(function(x){return !isIban(x.deger);});
  if(!ibans.length){
-  return '<div class="c" style="padding:12px 14px;margin-bottom:14px;"><div style="font-size:9px;font-weight:800;letter-spacing:.6px;color:var(--muted);margin-bottom:4px;">ÖDEME BİLGİLERİ</div>'
+  return '<div class="c" style="padding:12px 14px;margin-bottom:0;"><div style="font-size:9px;font-weight:800;letter-spacing:.6px;color:var(--muted);margin-bottom:4px;">ÖDEME BİLGİLERİ</div>'
    +ob.map(function(x,i){return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;'+(i<ob.length-1?'border-bottom:1px solid var(--line);':'')+'"><div style="min-width:0;"><div style="font-size:10px;color:var(--muted);">'+esc(x.etiket)+'</div><div style="font-size:13px;color:#fff;font-weight:600;word-break:break-all;">'+esc(x.deger)+'</div></div><div class="circ tap" data-act="copy" data-v="'+esc(x.deger)+'" style="width:30px;height:30px;background:#2C2C2C;flex-shrink:0;">'+ic('copy',15,'#EDEDED')+'</div></div>';}).join('')
    +'</div>';
  }
@@ -523,7 +530,7 @@ function odemeBilgiBlok(){
  var lbl=function(et){var c=curOf(et);return c==='USD'?'USD $':c==='TL'?'TL ₺':(esc(et)||'IBAN');};
  var hesap=others.map(function(o){return esc(o.deger);}).join(' · ');
  var tabs=ibans.map(function(x,i){return '<span class="ibtab'+(i===0?' on':'')+'" data-act="ibansec" data-cur="'+curOf(x.etiket)+'" data-iban="'+esc(x.deger)+'">'+lbl(x.etiket)+'</span>';}).join('');
- return '<div class="c" style="padding:13px 14px;margin-bottom:14px;">'
+ return '<div class="c" style="padding:13px 14px;margin-bottom:0;">'
   +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:'+(hesap?'9px':'10px')+';"><span style="font-size:9px;font-weight:800;letter-spacing:.6px;color:var(--muted);">ÖDEME BİLGİLERİ</span><div style="display:flex;gap:5px;">'+tabs+'</div></div>'
   +(hesap?'<div style="font-size:11px;color:var(--muted);margin-bottom:9px;">Hesap: <b style="color:#fff;">'+hesap+'</b></div>':'')
   +'<div style="display:flex;align-items:center;gap:9px;background:#141414;border:1px solid var(--line);border-radius:10px;padding:11px 12px;">'
@@ -552,9 +559,9 @@ function sheetForm(){
    const usdPre=insUSD>0?Math.round(insUSD):"";
    const ipucu=sn?('<div style="font-size:11px;color:var(--gold);margin:9px 0 0;font-weight:600;">'+ic((sn._du==="Gecikti"?'alert':'cal'),12,(sn._du==="Gecikti"?'#FF5A5A':'#F5C04A'))+' Taksit '+esc(sn.t.taksit||"")+' · vade '+(fmtDate(sn._d)||esc(sn.t.vade||""))+(sn._du==="Gecikti"?' (gecikmiş)':'')+'</div>'):'';
    const seg = hasKur
-     ? '<div style="display:flex;gap:8px;">'
-        +'<div class="opt2 on" id="pbTL" data-act="bpb" data-v="TL" style="flex:1;text-align:center;padding:11px;border-radius:11px;border:1px solid var(--line);background:#1b1b1b;font-weight:700;font-size:14px;cursor:pointer;">Türk Lirası (₺)</div>'
-        +'<div class="opt2" id="pbUSD" data-act="bpb" data-v="USD" style="flex:1;text-align:center;padding:11px;border-radius:11px;border:1px solid var(--line);background:#1b1b1b;font-weight:700;font-size:14px;color:var(--muted);cursor:pointer;">USD ($)</div>'
+     ? '<div class="seg">'
+        +'<div class="opt2 on" id="pbTL" data-act="bpb" data-v="TL">Türk Lirası (₺)</div>'
+        +'<div class="opt2" id="pbUSD" data-act="bpb" data-v="USD">USD ($)</div>'
        +'</div>'
      : '';
    const tlBlok='<div id="blTL"'+(hasKur?'':' style="display:none;"')+'>'
@@ -568,12 +575,15 @@ function sheetForm(){
      +(hasKur?'<div class="ratel">1 $ = <b>'+kurStr(k)+' ₺</b> · canlı satış</div>':'')
      +'</div>';
    return wrap("Ödeme Bildir",
-   '<div class="payform">'+odemeBilgiBlok()
+   '<div class="payform">'
    +'<label class="lbl">Hangi para birimiyle ödediniz?</label>'+(hasKur?seg:'<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Kur alınamadığı için tutarı USD girin.</div>')
    +tlBlok+usdBlok
    +ipucu
-   +'<label class="lbl">Ödeme Tarihi (yapılan / planlanan)</label><input id="b_tar" class="field" type="date" value="'+todayISO()+'">'
-   +'<label class="lbl">Yöntem</label><select id="b_yon" class="field"><option>Havale/EFT</option><option>Nakit</option><option>Kredi Kartı</option><option>Çek</option></select>'
+   +odemeBilgiBlok()
+   +'<div class="two">'
+     +'<div><label class="lbl">Ödeme Tarihi</label><input id="b_tar" class="field" type="date" value="'+todayISO()+'"></div>'
+     +'<div><label class="lbl">Yöntem</label><select id="b_yon" class="field"><option>Havale/EFT</option><option>Nakit</option><option>Kredi Kartı</option><option>Çek</option></select></div>'
+   +'</div>'
    +'<label class="lbl">Açıklama (isteğe bağlı)</label><textarea id="b_ack" class="field" style="min-height:58px;resize:vertical;" placeholder="Örn. dekont gönderdim / gelecek hafta ödeyeceğim"></textarea>'
    +'<button class="btnred" data-act="bildirsave">'+ic('send',16,'#fff')+' Bildirimi Gönder</button>'+'</div>');
  }
