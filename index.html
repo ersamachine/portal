@@ -43,6 +43,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',syste
 .opt2.on{background:var(--red)!important;color:#fff!important;border-color:var(--red)!important;box-shadow:0 3px 10px rgba(197,21,21,.4);}
 .ibtab{font-size:11px;font-weight:800;padding:5px 11px;border-radius:8px;background:#242424;color:var(--muted);cursor:pointer;transition:.15s;}
 .ibtab.on{background:var(--red);color:#fff;box-shadow:0 3px 9px rgba(197,21,21,.4);}
+.amt{display:flex;align-items:center;background:#1b1b1b;border:1px solid #2c2c2c;border-radius:13px;padding:0 14px;height:52px;margin-bottom:8px;}
+.amt .cur{color:var(--muted);font-size:16px;margin-right:8px;flex-shrink:0;}
+.amt input{flex:1;background:none;border:none;outline:none;font-size:17px;font-weight:700;color:#fff;min-width:0;font-family:inherit;}
+.amt .eq{font-size:13.5px;color:var(--green);font-weight:700;white-space:nowrap;margin-left:8px;flex-shrink:0;}
+.ratel{font-size:11.5px;color:#a8a8a8;margin:0 0 4px 2px;}
+.ratel b{color:#fff;font-weight:700;}
 .field::placeholder{color:var(--muted2);}
 select.field{appearance:none;-webkit-appearance:none;}
 .lbl{display:block;font-size:12.5px;font-weight:700;color:#C8C8C4;margin:0 0 6px;}
@@ -152,7 +158,8 @@ function fmtTL(n){ return Math.round(n).toLocaleString("tr-TR")+" ₺"; }
 function kurSatis(){ const k=(S.data&&S.data.kur)||null; return (k&&k.satis>0)?k:null; }
 function kurStr(k){ return Number(k.satis).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function bakiyeTL(bakiyeUSD){ const k=kurSatis(); if(!k)return''; const tl=Math.abs(bakiyeUSD||0)*k.satis; return '<div style="font-size:11.5px;color:#cdcdc7;margin-top:7px;">≈ <b style="color:#fff;">'+fmtTL(tl)+'</b> <span style="color:var(--muted);">· 1$ = '+kurStr(k)+' ₺ '+esc(k.kaynak||'')+(k.bayat?' · gün içi':' satış')+'</span></div>'; }
-function bHesap(){ try{ var el=document.getElementById("b_tl"); if(!el)return; var tl=parseFloat(String(el.value||"0").replace(",","."))||0; var r=parseFloat(el.getAttribute("data-rate"))||0; var usd=r>0?tl/r:0; var o=document.getElementById("b_usd"); if(o)o.textContent="$"+Math.round(usd).toLocaleString("tr-TR"); }catch(e){} }
+function bHesap(){ try{ var el=document.getElementById("b_tl"); if(!el)return; var tl=parseFloat(String(el.value||"0").replace(",","."))||0; var r=parseFloat(el.getAttribute("data-rate"))||0; var usd=r>0?tl/r:0; var o=document.getElementById("b_usd"); if(o)o.textContent="≈ $"+Math.round(usd).toLocaleString("tr-TR"); }catch(e){} }
+function bHesapUsd(){ try{ var el=document.getElementById("b_usd_in"); if(!el)return; var usd=parseFloat(String(el.value||"0").replace(",","."))||0; var r=parseFloat(el.getAttribute("data-rate"))||0; var tl=r>0?usd*r:0; var o=document.getElementById("b_tleq"); if(o)o.textContent=(usd>0&&r>0)?("≈ ₺"+Math.round(tl).toLocaleString("tr-TR")):""; }catch(e){} }
 const parseDate=v=>{if(!v)return null;const d=new Date(v);return isNaN(d)?null:(d.setHours(0,0,0,0),d);};
 const fmtD=d=>{const x=parseDate(d);if(!x)return"";return String(x.getDate()).padStart(2,"0")+"."+String(x.getMonth()+1).padStart(2,"0")+"."+x.getFullYear();};
 const toISO=v=>{const d=parseDate(v);return d?d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"):"";};
@@ -546,12 +553,15 @@ function sheetForm(){
        +'</div>'
      : '';
    const tlBlok='<div id="blTL"'+(hasKur?'':' style="display:none;"')+'>'
-     +'<label class="lbl">Ödediğiniz tutar (₺)</label><input id="b_tl" class="field" type="number" inputmode="decimal" placeholder="0" value="'+tlPre+'" data-rate="'+rate+'" oninput="bHesap()">'
-     +'<label class="lbl">Uygulanan kur</label><div class="field" style="display:flex;align-items:center;justify-content:space-between;background:#161616;color:#cfcfcf;">'+(hasKur?('1 $ = '+kurStr(k)+' ₺'):'-')+' <span style="font-size:10px;color:var(--muted);">canlı satış · sabit</span></div>'
-     +'<div style="margin-top:12px;background:#11271a;border:1px solid #224a30;border-radius:12px;padding:12px 14px;text-align:center;"><div style="font-size:10px;color:#7fdca0;letter-spacing:.5px;font-weight:700;">USD KARŞILIĞI (bakiyenize düşülecek)</div><div class="bignum" id="b_usd" style="font-size:21px;color:#eafff0;margin-top:3px;">$'+(insUSD>0?Math.round(insUSD).toLocaleString("tr-TR"):"0")+'</div></div>'
+     +'<label class="lbl">Ödediğiniz tutar (₺)</label>'
+     +'<div class="amt"><span class="cur">₺</span><input id="b_tl" type="number" inputmode="decimal" placeholder="0" value="'+tlPre+'" data-rate="'+rate+'" oninput="bHesap()"><span class="eq" id="b_usd">≈ $'+(insUSD>0?Math.round(insUSD).toLocaleString("tr-TR"):"0")+'</span></div>'
+     +'<div class="ratel">'+(hasKur?('1 $ = <b>'+kurStr(k)+' ₺</b> · canlı satış · bakiyenize USD karşılığı düşülür'):'kur alınamadı, tutarı USD girin')+'</div>'
      +'</div>';
    const usdBlok='<div id="blUSD"'+(hasKur?' style="display:none;"':'')+'>'
-     +'<label class="lbl">Ödediğiniz tutar ($)</label><input id="b_usd_in" class="field" type="number" inputmode="decimal" placeholder="0" value="'+usdPre+'"></div>';
+     +'<label class="lbl">Ödediğiniz tutar ($)</label>'
+     +'<div class="amt"><span class="cur">$</span><input id="b_usd_in" type="number" inputmode="decimal" placeholder="0" value="'+usdPre+'" data-rate="'+rate+'" oninput="bHesapUsd()"><span class="eq" id="b_tleq">'+((hasKur&&usdPre)?('≈ ₺'+Math.round(usdPre*rate).toLocaleString("tr-TR")):'')+'</span></div>'
+     +(hasKur?'<div class="ratel">1 $ = <b>'+kurStr(k)+' ₺</b> · canlı satış</div>':'')
+     +'</div>';
    return wrap("Ödeme Bildir",
    odemeBilgiBlok()
    +'<label class="lbl">Hangi para birimiyle ödediniz?</label>'+(hasKur?seg:'<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Kur alınamadığı için tutarı USD girin.</div>')
