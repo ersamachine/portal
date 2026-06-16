@@ -139,6 +139,7 @@ window.PHOTOS=[];
 
 const $=s=>document.getElementById(s);
 const esc=s=>(s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nrm2=v=>String(v==null?"":v).trim();
 const parseDate=v=>{if(!v)return null;const d=new Date(v);return isNaN(d)?null:(d.setHours(0,0,0,0),d);};
 const fmtD=d=>{const x=parseDate(d);if(!x)return"";return String(x.getDate()).padStart(2,"0")+"."+String(x.getMonth()+1).padStart(2,"0")+"."+x.getFullYear();};
 const toISO=v=>{const d=parseDate(v);return d?d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"):"";};
@@ -270,9 +271,10 @@ function teklifDetay(i){
  +'<div style="margin-top:8px;">'+chip(q.durum)+'</div>'
  +'<div class="h1" style="margin:9px 0 2px;">'+esc(stripFoto(q.urun)||'Teklif')+'</div><div class="sub bignum">'+esc(q.zaman||'')+(q.adet?' · '+esc(q.adet)+' adet':'')+'</div>'
  +(stripFoto(q.aciklama)?'<div class="c" style="padding:14px;margin-top:14px;"><div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted);">TALEP DETAYI</div><div style="font-size:13px;color:#C8C8C4;margin-top:6px;line-height:1.5;word-break:break-word;">'+esc(stripFoto(q.aciklama))+'</div></div>':'')
+ +((yan&&nrm2(q.yanit))?'<div class="c" style="padding:16px;margin-top:14px;border:1px solid #2a5a3a;background:#0f1f16;"><div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:#2ED573;">FİRMA YANITI / TEKLİF</div><div style="font-size:14px;color:#eafff0;margin-top:8px;line-height:1.6;word-break:break-word;white-space:pre-wrap;">'+esc(q.yanit)+'</div></div>':'')
  +'<div class="c" style="padding:22px;margin-top:14px;text-align:center;"><div class="circ" style="width:54px;height:54px;background:'+(yan?'#11271A':'var(--redsoft)')+';margin:0 auto;">'+ic(yan?'check':'clock',26,yan?'#2ED573':'#EDEDED')+'</div>'
   +'<div style="font-weight:700;font-size:16px;margin-top:12px;color:#fff;">'+(yan?'Teklifiniz hazır':'Talebiniz alındı')+'</div>'
-  +'<div style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.5;">'+(yan?'Firmamız teklifinizi yanıtladı; detaylar için sizinle iletişime geçeceğiz.':'Ekibimiz makineyi araştırıp fiyat hazırlıyor. Hazır olunca size bildirim göndereceğiz.')+'</div></div>'
+  +'<div style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.5;">'+(yan?(nrm2(q.yanit)?'Teklifimiz yukarıda; sorularınız için bizimle iletişime geçebilirsiniz.':'Firmamız teklifinizi yanıtladı; detaylar için sizinle iletişime geçeceğiz.'):'Ekibimiz makineyi araştırıp fiyat hazırlıyor. Hazır olunca size bildirim göndereceğiz.')+'</div></div>'
  +'</div>';
 }
 
