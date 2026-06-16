@@ -102,6 +102,10 @@ i.ic{display:inline-flex;}i.ic svg{display:block;}
 .btngold{background:var(--gold);color:#1a1a1a;box-shadow:0 8px 20px rgba(245,166,35,.25);}
 .donut{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .hole{width:44px;height:44px;border-radius:50%;background:#202020;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.tchips{display:flex;gap:7px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:none;}
+.tchips::-webkit-scrollbar{display:none;}
+.tchip{flex:0 0 auto;font-size:12px;font-weight:700;padding:7px 13px;border-radius:20px;background:#1b1b1b;border:1px solid #262626;color:#8A8A8A;cursor:pointer;white-space:nowrap;}
+.tchip.on{background:#fff;color:#111;border-color:#fff;}
 .divr{height:1px;background:#2f2f2f;margin:13px 0 11px;}
 .tlrow{display:flex;gap:13px;position:relative;padding-bottom:20px;}
 .tlrow:last-child{padding-bottom:0;}
@@ -284,6 +288,60 @@ function teklifDetay(i){
  +'</div>';
 }
 
+/* ---------- TALEPLERİM (birleşik talep merkezi) ---------- */
+const TMETA={teklif:{lbl:'TEKLİF',c:'#F5A623',bg:'#3a2e10',ic:'tag'},sifre:{lbl:'ŞİFRE',c:'#9db8f0',bg:'#11203a',ic:'lock'},servis:{lbl:'SERVİS',c:'#2ED573',bg:'#0f1f16',ic:'wrench'},odeme:{lbl:'ÖDEME',c:'#FF6B5E',bg:'#3a1414',ic:'wallet'}};
+function talepItems(){
+ const d=S.data||{}; const items=[];
+ (d.teklifler||[]).forEach((q,i)=>items.push({kind:'teklif',idx:i,title:stripFoto(q.urun)||'Fiyat teklifi',sub:(q.adet?q.adet+' adet · ':'')+'fiyat teklifi',durum:q.durum||'Yeni',date:q.zaman||''}));
+ (d.sifreler||[]).forEach((s,i)=>items.push({kind:'sifre',idx:i,title:stripFoto(s.makine)||'Makine şifresi',sub:'açılış şifresi',durum:s.durum||'Yeni',date:s.zaman||''}));
+ (d.servisler||[]).forEach((s,i)=>items.push({kind:'servis',idx:i,title:s.makine||'Servis talebi',sub:stripFoto(s.sorun||'arıza/servis').slice(0,40),durum:s.durum||'Yeni',date:s.zaman||''}));
+ (d.bildirimler||[]).forEach((b,i)=>{const cur=b.pb==='TL'||b.pb==='₺'?'₺':'$';items.push({kind:'odeme',idx:i,title:money(b.tutar,cur)+' · '+(b.yontem||'ödeme'),sub:(b.usdKarsilik>0&&cur==='₺')?('≈ $'+Math.round(b.usdKarsilik).toLocaleString('tr-TR')):(b.tarih||''),durum:b.durum||'Yeni',date:b.zaman||b.tarih||''});});
+ items.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+ return items;
+}
+function tekliflerView(){ return taleplerimView(); }   // eski tab adı güvenliği
+function taleplerimView(){
+ const f=S.talF||'all'; const all=talepItems();
+ const bek=all.filter(x=>['Yeni','Bekliyor','İşlemde','Onay Bekliyor'].indexOf(x.durum)>=0).length;
+ const list=all.filter(x=>f==='all'||x.kind===f);
+ const chips=[['all','Tümü'],['teklif','Teklif'],['sifre','Şifre'],['servis','Servis'],['odeme','Ödeme']]
+   .map(c=>'<div class="tchip'+(f===c[0]?' on':'')+'" data-act="talF" data-v="'+c[0]+'">'+c[1]+'</div>').join('');
+ const rows=list.map(x=>{const m=TMETA[x.kind];
+   return '<div class="c tap" data-act="talepAc" data-kind="'+x.kind+'" data-v="'+x.idx+'" style="display:flex;gap:11px;align-items:center;padding:12px 13px;">'
+    +'<div style="width:38px;height:38px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:'+m.bg+';">'+ic(m.ic,19,m.c)+'</div>'
+    +'<div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span style="font-size:9px;font-weight:800;letter-spacing:.4px;padding:1px 6px;border-radius:5px;margin-right:6px;background:'+m.bg+';color:'+m.c+';">'+m.lbl+'</span>'+esc(x.title)+'</div><div class="cs" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(x.date||'')+(x.sub?' · '+esc(x.sub):'')+'</div></div>'
+    +chip(x.durum)+'</div>';}).join('');
+ return '<div class="pad stg"><div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:4px;"><div><div class="h1">Taleplerim</div><div class="sub">'+all.length+' talep'+(bek?' · '+bek+' bekliyor':'')+'</div></div>'+(bek?'<span class="chip chip-r">'+bek+' aktif</span>':'')+'</div>'
+  +'<div class="tchips">'+chips+'</div>'
+  +'<button class="btnred" data-act="open" data-v="yeniTalep">'+ic('plus',17,'#fff')+' Yeni Talep</button>'
+  +'<div style="display:flex;flex-direction:column;gap:9px;margin-top:13px;">'+(rows||'<div class="empty">Bu türde talep yok.</div>')+'</div></div>';
+}
+function talepDetay(kind,i){
+ const d=S.data||{}; const m=TMETA[kind]||TMETA.teklif;
+ const head=(title,sub)=>'<div class="pad stg"><div class="back" data-act="back">'+ic('cl',18)+' Taleplerim</div>'
+   +'<div style="display:flex;align-items:center;gap:11px;margin:10px 0 14px;"><div style="width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:'+m.bg+';">'+ic(m.ic,21,m.c)+'</div><div><div class="h1" style="font-size:18px;">'+esc(title)+'</div><div class="sub bignum">'+esc(sub||'')+'</div></div></div>';
+ if(kind==='sifre'){ const s=(d.sifreler||[])[i]||{}; const verildi=s.durum==='Verildi';
+   return head(stripFoto(s.makine)||'Makine şifresi',(s.zaman||''))
+    +'<div style="margin-bottom:12px;">'+chip(s.durum)+'</div>'
+    +(verildi&&s.sifre?'<div class="codebox"><div style="font-size:9.5px;color:#7fd9a3;letter-spacing:.5px;">MAKİNE ŞİFRENİZ</div><div class="cv">'+esc(s.sifre)+'</div></div>':'<div class="c" style="padding:20px;text-align:center;color:var(--muted);">'+(s.durum==='Reddedildi'?'Bu talep reddedildi.':'Şifreniz hazırlanıyor; onaylanınca burada görünecek.')+'</div>')+'</div>';
+ }
+ if(kind==='servis'){ const s=(d.servisler||[])[i]||{};
+   return head(s.makine||'Servis talebi',(s.zaman||''))
+    +'<div style="margin-bottom:12px;">'+chip(s.durum)+'</div>'
+    +'<div class="c" style="padding:14px;"><div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted);">BİLDİRDİĞİNİZ SORUN</div><div style="font-size:13.5px;color:#e8e8e8;margin-top:6px;line-height:1.55;">'+esc(stripFoto(s.sorun)||'-')+'</div></div>'
+    +'<div class="c" style="padding:18px;margin-top:12px;text-align:center;color:var(--muted);font-size:13px;">'+(s.durum==='Çözüldü'?'Talebiniz çözüldü.':(s.durum==='İşlemde'?'Ekibimiz ilgileniyor.':'Talebiniz alındı; en kısa sürede dönüş yapılacak.'))+'</div></div>';
+ }
+ // odeme
+ const b=(d.bildirimler||[])[i]||{}; const cur=(b.pb==='TL'||b.pb==='₺')?'₺':'$'; const onayli=b.durum==='Onaylandı';
+ return head(money(b.tutar,cur)+' ödeme',(b.tarih||b.zaman||''))
+  +'<div style="margin-bottom:12px;">'+chip(b.durum)+'</div>'
+  +'<div class="c" style="padding:15px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="color:var(--muted);font-size:12px;">Tutar</span><b>'+money(b.tutar,cur)+'</b></div>'
+  +(b.kur>0?'<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="color:var(--muted);font-size:12px;">Uygulanan kur</span><b>'+Number(b.kur).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₺</b></div>':'')
+  +(b.usdKarsilik>0?'<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="color:var(--muted);font-size:12px;">USD karşılığı</span><b style="color:var(--green);">$'+Math.round(b.usdKarsilik).toLocaleString('tr-TR')+'</b></div>':'')
+  +'<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:12px;">Yöntem</span><b>'+esc(b.yontem||'-')+'</b></div></div>'
+  +(onayli?'<button class="btng" style="width:100%;justify-content:center;margin-top:14px;" data-act="makbuz" data-v="'+i+'">'+ic('receipt',16,'#5fd08a')+' Makbuzu Gör</button>':'<div class="c" style="padding:16px;margin-top:12px;text-align:center;color:var(--muted);font-size:13px;">Ödemeniz kontrol edildiğinde onaylanacak.</div>')+'</div>';
+}
+
 /* ---------- TAKSİT PLANI ---------- */
 function taksitlerView(){
  const d=S.data||{};
@@ -319,7 +377,7 @@ function siparislerView(){
   return '<div class="c tap" data-act="siparisDetay" data-v="'+i+'" style="padding:15px;"><div style="display:flex;justify-content:space-between;align-items:center;">'+(bitti?'<span class="chip chip-g">'+ic('check',10)+' Tamamlandı</span>':'<span class="chip chip-r">'+ic('truck',10)+' '+esc(o.durum)+'</span>')+'<span style="font-size:12px;color:var(--red);font-weight:700;">Takip ›</span></div>'
   +'<div style="font-weight:700;font-size:14.5px;margin:10px 0 1px;">'+esc(o.makine||'Sipariş')+'</div><div class="cs">'+(o.adet?esc(o.adet)+' adet':'')+(o.zaman?' · '+esc(o.zaman):'')+'</div>'
   +'<div class="prog"><div style="width:'+siparisPct(cur)+'%;"></div></div><div style="display:flex;justify-content:space-between;margin-top:7px;font-size:10px;color:var(--muted);"><span>'+(cur+1)+'/'+SIPARIS_ASAMA.length+' aşama</span><span>%'+siparisPct(cur)+'</span></div></div>';}).join('');
- return '<div class="pad stg"><div class="h1" style="margin-top:4px;">Siparişlerim</div><div class="sub">Makinelerinizin sevkiyat durumu</div>'
+ return '<div class="pad stg"><div class="back" data-act="back">'+ic('cl',18)+' Geri</div><div class="h1" style="margin-top:4px;">Siparişlerim</div><div class="sub">Makinelerinizin sevkiyat durumu</div>'
  +'<div style="display:flex;flex-direction:column;gap:12px;margin-top:14px;">'+(cards||'<div class="empty">Henüz siparişiniz görünmüyor.</div>')+'</div></div>';
 }
 function siparisDetay(i){
@@ -443,6 +501,13 @@ function odemeBilgiBlok(){
   +'</div>';
 }
 function sheetForm(){
+ if(S.sheet==="yeniTalep") return wrap("Yeni Talep",
+   '<div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">Ne talep etmek istersiniz?</div>'
+   +'<div style="display:flex;flex-direction:column;gap:10px;">'
+   +'<div class="c tap" data-act="open" data-v="teklif" style="padding:15px;display:flex;align-items:center;gap:12px;"><div style="width:42px;height:42px;border-radius:12px;background:#3a2e10;display:flex;align-items:center;justify-content:center;">'+ic('tag',21,'#F5A623')+'</div><div><div style="font-weight:700;color:#fff;">Fiyat Teklifi</div><div style="font-size:11.5px;color:var(--muted);">Makine için fiyat iste</div></div></div>'
+   +'<div class="c tap" data-act="open" data-v="sifre" style="padding:15px;display:flex;align-items:center;gap:12px;"><div style="width:42px;height:42px;border-radius:12px;background:#11203a;display:flex;align-items:center;justify-content:center;">'+ic('lock',21,'#9db8f0')+'</div><div><div style="font-weight:700;color:#fff;">Makine Şifresi</div><div style="font-size:11.5px;color:var(--muted);">Açılış şifresi talep et</div></div></div>'
+   +'<div class="c tap" data-act="open" data-v="servis" style="padding:15px;display:flex;align-items:center;gap:12px;"><div style="width:42px;height:42px;border-radius:12px;background:#0f1f16;display:flex;align-items:center;justify-content:center;">'+ic('wrench',21,'#2ED573')+'</div><div><div style="font-weight:700;color:#fff;">Servis / Arıza</div><div style="font-size:11.5px;color:var(--muted);">Arıza bildir / servis çağır</div></div></div>'
+   +'</div>');
  if(S.sheet==="makineChooser") return '<div class="ovl"><div class="sheet"><div class="sheethead"><div class="sheettitle">Makine İşlemleri</div><div class="circ tap" data-act="close" style="background:#2C2C2C;">'+ic('x',16,'#EDEDED')+'</div></div>'
   +'<div class="c tap" data-act="chooser" data-v="sifre" style="padding:15px;display:flex;align-items:center;gap:12px;margin-bottom:10px;"><div class="sq" style="background:#192639;">'+ic('lock',19,'#5B8DEF')+'</div><div style="flex:1;"><div class="ct">Makine Şifresi Al</div><div class="cs">Aylık açılış kodunu iste</div></div>'+ic('cr',17,'#777')+'</div>'
   +'<div class="c tap" data-act="chooser" data-v="servis" style="padding:15px;display:flex;align-items:center;gap:12px;"><div class="sq" style="background:#2A1414;">'+ic('wrench',19,'#FF6B5E')+'</div><div style="flex:1;"><div class="ct">Servis / Arıza Kaydı</div><div class="cs">Teknik destek talebi aç</div></div>'+ic('cr',17,'#777')+'</div>'
@@ -536,15 +601,15 @@ function renderLogin(){
 }
 
 /* ---------- render ---------- */
-function nav(){const it=[["home","Anasayfa","home"],["teklifler","Teklifler","file"],["makine","Makine","wrench"],["hesap","Hesap","user"]];
- const act=S.pushed?(S.pushed.t==='teklifDetay'?'teklifler':(S.pushed.t==='cari'?'home':'home')):S.tab;
+function nav(){const it=[["home","Anasayfa","home"],["taleplerim","Taleplerim","file"],["makine","Makine","wrench"],["hesap","Hesap","user"]];
+ const act=S.pushed?((S.pushed.t==='teklifDetay'||S.pushed.t==='talepDetay')?'taleplerim':(S.pushed.t==='cari'?'home':'home')):S.tab;
  return '<div class="navwrap">'+it.map(t=>'<div class="nslot '+(act===t[0]?'on':'')+'" data-act="tab" data-v="'+t[0]+'">'+ic(t[2],21,act===t[0]?'#C51515':'#8A8A8A')+'<span>'+t[1]+'</span></div>').join('')+'</div>';}
 function render(){
  if(!S.authed){renderLogin();return;}
  let h;
  if(S.loading||!S.data){h='<div class="pad"><div class="empty" style="padding-top:150px;">'+ic('refresh',30,'#5A5A5A')+'<div style="margin-top:10px;">Yükleniyor…</div></div></div>';}
- else if(S.pushed){const p=S.pushed;h=p.t==='bildirimler'?bildirimlerView():p.t==='cari'?cariView():p.t==='taksitler'?taksitlerView():p.t==='odemelerim'?odemelerimView():p.t==='makbuz'?makbuzView(p.v):p.t==='teklifDetay'?teklifDetay(p.v):p.t==='siparisler'?siparislerView():p.t==='siparisDetay'?siparisDetay(p.v):homeView();}
- else h=({home:homeView,teklifler:tekliflerView,makine:makineView,hesap:hesapView}[S.tab]||homeView)();
+ else if(S.pushed){const p=S.pushed;h=p.t==='bildirimler'?bildirimlerView():p.t==='cari'?cariView():p.t==='taksitler'?taksitlerView():p.t==='odemelerim'?odemelerimView():p.t==='makbuz'?makbuzView(p.v):p.t==='teklifDetay'?teklifDetay(p.v):p.t==='talepDetay'?talepDetay(p.kind,p.v):p.t==='siparisler'?siparislerView():p.t==='siparisDetay'?siparisDetay(p.v):homeView();}
+ else h=({home:homeView,taleplerim:taleplerimView,teklifler:taleplerimView,makine:makineView,hesap:hesapView}[S.tab]||homeView)();
  $("scr").innerHTML=h;
  $("navhost").innerHTML=(S.data&&!S.loading)?nav():"";
  $("sheethost").innerHTML=S.success?successSheet():(S.sheet?sheetForm():"");
@@ -574,6 +639,12 @@ $("app").addEventListener("click",async function(e){
  if(a==="tab"){S.tab=v;S.pushed=null;S.sheet=null;render();}
  else if(a==="push"){S.pushed={t:v};S.sheet=null;render();}
  else if(a==="back"){S.pushed=null;render();}
+ else if(a==="talF"){S.talF=v;render();}
+ else if(a==="talepAc"){const kind=el.getAttribute("data-kind");const i=+v;
+   if(kind==="teklif"){S.pushed={t:"teklifDetay",v:i};}
+   else if(kind==="odeme"){const b=(S.data.bildirimler||[])[i];if(b&&b.durum==="Onaylandı"){S.pushed={t:"makbuz",v:i};}else{S.pushed={t:"talepDetay",kind:"odeme",v:i};}}
+   else {S.pushed={t:"talepDetay",kind:kind,v:i};}
+   render();}
  else if(a==="teklifDetay"){S.pushed={t:"teklifDetay",v:+v};render();}
  else if(a==="siparisDetay"){S.pushed={t:"siparisDetay",v:+v};render();}
  else if(a==="makbuz"){S.pushed={t:"makbuz",v:+v};render();}
@@ -613,7 +684,7 @@ $("app").addEventListener("click",async function(e){
  else if(a==="servissave") await submit("servisTalep",{makine:$("v_mak").value.trim(),sorun:$("v_sorun").value.trim()},el,!$("v_sorun").value.trim()&&"Sorunu yazın");
  else if(a==="teklifsave") await submit("teklifTalep",{urun:$("t_urun").value.trim(),adet:$("t_adet").value,aciklama:$("t_ack").value.trim(),photos:(window.PHOTOS||[]).slice()},el,!$("t_urun").value.trim()&&"Makine adı yazın");
 });
-function successGo(){const a=S.success;S.success=null;if(a==="teklifTalep"){S.tab="teklifler";S.pushed=null;}else if(a==="sifreTalep"||a==="servisTalep"){S.tab="makine";S.pushed=null;}else{S.pushed={t:"cari"};}}
+function successGo(){const a=S.success;S.success=null;if(a==="teklifTalep"||a==="sifreTalep"||a==="servisTalep"){S.tab="taleplerim";S.pushed=null;}else{S.pushed={t:"cari"};}}
 async function submit(action,data,el,errMsg){
  if(errMsg){toast(errMsg);return;}
  const old=el.innerHTML;el.style.opacity=".7";el.textContent="Gönderiliyor…";
