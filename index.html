@@ -141,6 +141,11 @@ window.PHOTOS=[];
 const $=s=>document.getElementById(s);
 const esc=s=>(s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const nrm2=v=>String(v==null?"":v).trim();
+function fmtTL(n){ return Math.round(n).toLocaleString("tr-TR")+" ₺"; }
+function kurSatis(){ const k=(S.data&&S.data.kur)||null; return (k&&k.satis>0)?k:null; }
+function kurStr(k){ return Number(k.satis).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function bakiyeTL(bakiyeUSD){ const k=kurSatis(); if(!k)return''; const tl=Math.abs(bakiyeUSD||0)*k.satis; return '<div style="font-size:11.5px;color:#cdcdc7;margin-top:7px;">≈ <b style="color:#fff;">'+fmtTL(tl)+'</b> <span style="color:var(--muted);">· 1$ = '+kurStr(k)+' ₺ '+esc(k.kaynak||'')+(k.bayat?' · gün içi':' satış')+'</span></div>'; }
+function bHesap(){ try{ var el=document.getElementById("b_tl"); if(!el)return; var tl=parseFloat(String(el.value||"0").replace(",","."))||0; var r=parseFloat(el.getAttribute("data-rate"))||0; var usd=r>0?tl/r:0; var o=document.getElementById("b_usd"); if(o)o.textContent="$"+Math.round(usd).toLocaleString("tr-TR"); }catch(e){} }
 const parseDate=v=>{if(!v)return null;const d=new Date(v);return isNaN(d)?null:(d.setHours(0,0,0,0),d);};
 const fmtD=d=>{const x=parseDate(d);if(!x)return"";return String(x.getDate()).padStart(2,"0")+"."+String(x.getMonth()+1).padStart(2,"0")+"."+x.getFullYear();};
 const toISO=v=>{const d=parseDate(v);return d?d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"):"";};
@@ -242,7 +247,7 @@ function homeView(){
  +odemeHero()
  +'<div class="c" style="margin-top:14px;padding:15px 16px;">'
   +'<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">'
-   +'<div style="min-width:0;"><div style="font-size:9px;font-weight:800;letter-spacing:1px;color:var(--muted);">GÜNCEL BAKİYE ($)</div><div class="bignum" style="font-size:25px;color:#fff;margin-top:4px;">'+money(Math.abs(o.bakiye||0))+'</div><div style="font-size:11px;color:'+(neg?'#2ED573':'var(--gold)')+';font-weight:600;margin-top:2px;">'+(neg?'Lehinize bakiye':(o.bakiye?'Ödenecek bakiye':'Bakiye yok'))+'</div></div>'
+   +'<div style="min-width:0;"><div style="font-size:9px;font-weight:800;letter-spacing:1px;color:var(--muted);">GÜNCEL BAKİYE ($)</div><div class="bignum" style="font-size:25px;color:#fff;margin-top:4px;">'+money(Math.abs(o.bakiye||0))+'</div><div style="font-size:11px;color:'+(neg?'#2ED573':'var(--gold)')+';font-weight:600;margin-top:2px;">'+(neg?'Lehinize bakiye':(o.bakiye?'Ödenecek bakiye':'Bakiye yok'))+'</div>'+bakiyeTL(o.bakiye)+'</div>'
    +(function(){const op=o.toplamFatura?Math.max(0,Math.min(100,Math.round((o.toplamTahsilat/o.toplamFatura)*100))):0;return '<div class="donut" style="background:conic-gradient(#2ED573 0% '+op+'%, #2c2c2c '+op+'% 100%);"><div class="hole"><div class="bignum" style="font-size:14px;color:#fff;">%'+op+'</div><div style="font-size:7.5px;color:var(--muted);letter-spacing:.3px;">ÖDENDİ</div></div></div>';})()
   +'</div>'
   +'<div class="divr"></div><div class="tap" data-act="push" data-v="cari" style="font-size:11.5px;color:var(--muted);font-weight:600;">Ekstreyi gör ›</div>'
@@ -348,7 +353,7 @@ function cariView(){
   return '<div class="lrow"><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;">'+esc(h.tip)+' <span style="color:var(--muted);font-weight:600;">· '+fmtD(h.tarih)+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:1px;">'+esc(h.aciklama||'')+'</div></div><div style="text-align:right;"><div class="bignum" style="font-size:13px;color:'+(isF?'#FF6B5E':'#2ED573')+';">'+(isF?'+':'−')+money(isF?h.borc:h.alacak)+'</div><div style="font-size:9px;color:var(--muted);">ara ' + money(bak)+'</div></div></div>';}).join("");
  const bil=(d.bildirimler||[]);
  return '<div class="pad stg"><div class="back" data-act="back">'+ic('cl',18)+' Geri</div>'
- +'<div class="blk" style="padding:18px;margin-top:6px;text-align:center;"><div style="font-size:10px;color:#9b9b95;letter-spacing:1px;">GÜNCEL BAKİYE ($)</div><div class="bignum" style="font-size:30px;color:#fff;margin-top:5px;">'+money(Math.abs(o.bakiye||0))+'</div><div style="display:flex;justify-content:center;gap:24px;margin-top:14px;"><div><div style="font-size:10px;color:#9b9b95;">Fatura</div><div class="bignum" style="font-weight:700;font-size:14px;color:#fff;">'+money(o.toplamFatura)+'</div></div><div><div style="font-size:10px;color:#9b9b95;">Tahsilat</div><div class="bignum" style="font-weight:700;font-size:14px;color:var(--green);">'+money(o.toplamTahsilat)+'</div></div></div></div>'
+ +'<div class="blk" style="padding:18px;margin-top:6px;text-align:center;"><div style="font-size:10px;color:#9b9b95;letter-spacing:1px;">GÜNCEL BAKİYE ($)</div><div class="bignum" style="font-size:30px;color:#fff;margin-top:5px;">'+money(Math.abs(o.bakiye||0))+'</div>'+(kurSatis()?'<div style="font-size:12px;color:#cdcdc7;margin-top:4px;">≈ <b style="color:#fff;">'+fmtTL(Math.abs(o.bakiye||0)*kurSatis().satis)+'</b> <span style="color:#9b9b95;">· 1$ = '+kurStr(kurSatis())+' ₺</span></div>':'')+'<div style="display:flex;justify-content:center;gap:24px;margin-top:14px;"><div><div style="font-size:10px;color:#9b9b95;">Fatura</div><div class="bignum" style="font-weight:700;font-size:14px;color:#fff;">'+money(o.toplamFatura)+'</div></div><div><div style="font-size:10px;color:#9b9b95;">Tahsilat</div><div class="bignum" style="font-weight:700;font-size:14px;color:var(--green);">'+money(o.toplamTahsilat)+'</div></div></div></div>'
  +'<div class="sec">Ekstre</div><div class="c" style="padding:2px 15px 8px;">'+(rows||'<div class="empty">Hareket yok.</div>')+'</div>'
  +(bil.length?'<div class="sec">Ödeme Bildirimlerim</div><div class="c" style="padding:2px 15px 8px;">'+bil.map((b,i)=>'<div class="lrow"><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;">'+money(b.tutar,b.pb==='TL'?'₺':'$')+' · '+esc(b.yontem||'')+'</div><div style="font-size:11px;color:var(--muted);">'+esc(b.zaman||'')+'</div></div><div style="display:flex;align-items:center;gap:8px;">'+(b.durum==='Onaylandı'?'<span class="tap" data-act="makbuz" data-v="'+i+'" style="font-size:11px;font-weight:700;color:#5fd08a;display:inline-flex;align-items:center;gap:3px;">'+ic('receipt',13,'#5fd08a')+' Makbuz</span>':'')+chip(b.durum)+'</div></div>').join('')+'</div>':'')
  +'</div>';
@@ -444,11 +449,28 @@ function sheetForm(){
   +'</div></div>';
  if(S.sheet==="bildir"){
    const sn=sonrakiTaksit();
-   const tutarVal=sn?Math.round(sn.t.tutar||0):"";
-   const ipucu=sn?('<div style="font-size:11px;color:var(--gold);margin:-4px 0 12px;font-weight:600;">'+ic((sn._du==="Gecikti"?'alert':'cal'),12,(sn._du==="Gecikti"?'#FF5A5A':'#F5C04A'))+' Taksit '+esc(sn.t.taksit||"")+' · vade '+(fmtDate(sn._d)||esc(sn.t.vade||""))+(sn._du==="Gecikti"?' (gecikmiş)':'')+'</div>'):'';
+   const k=kurSatis(); const rate=k?k.satis:0; const hasKur=rate>0;
+   const insUSD=sn?(sn.t.tutar||0):0;
+   const tlPre=(hasKur&&insUSD>0)?Math.round(insUSD*rate):"";
+   const usdPre=insUSD>0?Math.round(insUSD):"";
+   const ipucu=sn?('<div style="font-size:11px;color:var(--gold);margin:-2px 0 10px;font-weight:600;">'+ic((sn._du==="Gecikti"?'alert':'cal'),12,(sn._du==="Gecikti"?'#FF5A5A':'#F5C04A'))+' Taksit '+esc(sn.t.taksit||"")+' · vade '+(fmtDate(sn._d)||esc(sn.t.vade||""))+(sn._du==="Gecikti"?' (gecikmiş)':'')+'</div>'):'';
+   const seg = hasKur
+     ? '<div style="display:flex;gap:8px;">'
+        +'<div class="opt2 on" id="pbTL" data-act="bpb" data-v="TL" style="flex:1;text-align:center;padding:11px;border-radius:11px;border:1px solid var(--line);background:#1b1b1b;font-weight:700;font-size:14px;cursor:pointer;">Türk Lirası (₺)</div>'
+        +'<div class="opt2" id="pbUSD" data-act="bpb" data-v="USD" style="flex:1;text-align:center;padding:11px;border-radius:11px;border:1px solid var(--line);background:#1b1b1b;font-weight:700;font-size:14px;color:var(--muted);cursor:pointer;">USD ($)</div>'
+       +'</div>'
+     : '';
+   const tlBlok='<div id="blTL"'+(hasKur?'':' style="display:none;"')+'>'
+     +'<label class="lbl">Ödediğiniz tutar (₺)</label><input id="b_tl" class="field" type="number" inputmode="decimal" placeholder="0" value="'+tlPre+'" data-rate="'+rate+'" oninput="bHesap()">'
+     +'<label class="lbl">Uygulanan kur</label><div class="field" style="display:flex;align-items:center;justify-content:space-between;background:#161616;color:#cfcfcf;">'+(hasKur?('1 $ = '+kurStr(k)+' ₺'):'-')+' <span style="font-size:10px;color:var(--muted);">canlı satış · sabit</span></div>'
+     +'<div style="margin-top:12px;background:#11271a;border:1px solid #224a30;border-radius:12px;padding:12px 14px;text-align:center;"><div style="font-size:10px;color:#7fdca0;letter-spacing:.5px;font-weight:700;">USD KARŞILIĞI (bakiyenize düşülecek)</div><div class="bignum" id="b_usd" style="font-size:21px;color:#eafff0;margin-top:3px;">$'+(insUSD>0?Math.round(insUSD).toLocaleString("tr-TR"):"0")+'</div></div>'
+     +'</div>';
+   const usdBlok='<div id="blUSD"'+(hasKur?' style="display:none;"':'')+'>'
+     +'<label class="lbl">Ödediğiniz tutar ($)</label><input id="b_usd_in" class="field" type="number" inputmode="decimal" placeholder="0" value="'+usdPre+'"></div>';
    return wrap("Ödeme Bildir",
    odemeBilgiBlok()
-   +'<div class="row2"><div><label class="lbl">Tutar</label><input id="b_tutar" class="field" type="number" inputmode="decimal" placeholder="0" value="'+tutarVal+'"></div><div><label class="lbl">Para Birimi</label><select id="b_pb" class="field"><option>$</option><option>TL</option></select></div></div>'
+   +'<label class="lbl">Hangi para birimiyle ödediniz?</label>'+(hasKur?seg:'<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Kur alınamadığı için tutarı USD girin.</div>')
+   +tlBlok+usdBlok
    +ipucu
    +'<label class="lbl">Ödeme Tarihi (yapılan / planlanan)</label><input id="b_tar" class="field" type="date" value="'+todayISO()+'">'
    +'<label class="lbl">Yöntem</label><select id="b_yon" class="field"><option>Havale/EFT</option><option>Nakit</option><option>Kredi Kartı</option><option>Çek</option></select>'
@@ -572,7 +594,21 @@ $("app").addEventListener("click",async function(e){
      if(rem){try{localStorage.setItem("ersa_portal_auth",JSON.stringify({kod:k,sifre:p}));}catch(e2){}}
      S.data=j;saveCache(j);S.authed=true;S.loginErr="";S.tab="home";render();
    }catch(e3){S.loginErr="Bağlantı kurulamadı.";S.kod="";S.sifre="";render();}}
- else if(a==="bildirsave") await submit("bildirim",{tutar:$("b_tutar").value,pb:$("b_pb").value,tarih:$("b_tar").value,yontem:$("b_yon").value,aciklama:$("b_ack").value.trim()},el,!$("b_tutar").value&&"Tutar girin");
+ else if(a==="bpb"){ const tl=$("blTL"),us=$("blUSD"),pt=$("pbTL"),pu=$("pbUSD"); if(!tl||!us)return;
+   if(v==="TL"){ tl.style.display="block"; us.style.display="none"; if(pt){pt.classList.add("on");pt.style.color="#fff";} if(pu){pu.classList.remove("on");pu.style.color="var(--muted)";} bHesap(); }
+   else { tl.style.display="none"; us.style.display="block"; if(pu){pu.classList.add("on");pu.style.color="#fff";} if(pt){pt.classList.remove("on");pt.style.color="var(--muted)";} } }
+ else if(a==="bildirsave"){
+   const tlVisible = $("blTL") && $("blTL").style.display!=="none";
+   if(tlVisible){
+     const tlEl=$("b_tl"); const tl=parseFloat(String(tlEl.value||"").replace(",","."))||0;
+     const rate=parseFloat(tlEl.getAttribute("data-rate"))||0;
+     const usd=rate>0?Math.round((tl/rate)*100)/100:0;
+     await submit("bildirim",{tutar:tl,pb:"₺",kur:rate,usdKarsilik:usd,tarih:$("b_tar").value,yontem:$("b_yon").value,aciklama:$("b_ack").value.trim()},el,!tl&&"Tutar girin");
+   } else {
+     const usd=parseFloat(String($("b_usd_in").value||"").replace(",","."))||0;
+     await submit("bildirim",{tutar:usd,pb:"$",tarih:$("b_tar").value,yontem:$("b_yon").value,aciklama:$("b_ack").value.trim()},el,!usd&&"Tutar girin");
+   }
+ }
  else if(a==="sifresave")  await submit("sifreTalep",{makine:$("s_mak").value.trim(),photos:(window.PHOTOS||[]).slice()},el,false);
  else if(a==="servissave") await submit("servisTalep",{makine:$("v_mak").value.trim(),sorun:$("v_sorun").value.trim()},el,!$("v_sorun").value.trim()&&"Sorunu yazın");
  else if(a==="teklifsave") await submit("teklifTalep",{urun:$("t_urun").value.trim(),adet:$("t_adet").value,aciklama:$("t_ack").value.trim(),photos:(window.PHOTOS||[]).slice()},el,!$("t_urun").value.trim()&&"Makine adı yazın");
