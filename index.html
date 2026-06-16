@@ -47,8 +47,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',syste
 .amt .cur{color:var(--muted);font-size:16px;margin-right:8px;flex-shrink:0;}
 .amt input{flex:1;background:none;border:none;outline:none;font-size:17px;font-weight:700;color:#fff;min-width:0;font-family:inherit;}
 .amt .eq{font-size:13.5px;color:var(--green);font-weight:700;white-space:nowrap;margin-left:8px;flex-shrink:0;}
-.ratel{font-size:11.5px;color:#a8a8a8;margin:0 0 4px 2px;}
+.ratel{font-size:11.5px;color:#a8a8a8;margin:7px 0 0 2px;}
 .ratel b{color:#fff;font-weight:700;}
+.payform .lbl{margin:13px 0 7px;}
+.payform .lbl:first-of-type{margin-top:2px;}
+.payform .field{margin-bottom:0;}
+.payform .amt{margin-bottom:0;}
+.payform .btnred{margin-top:16px;}
 .field::placeholder{color:var(--muted2);}
 select.field{appearance:none;-webkit-appearance:none;}
 .lbl{display:block;font-size:12.5px;font-weight:700;color:#C8C8C4;margin:0 0 6px;}
@@ -545,7 +550,7 @@ function sheetForm(){
    const insUSD=sn?(sn.t.tutar||0):0;
    const tlPre=(hasKur&&insUSD>0)?Math.round(insUSD*rate):"";
    const usdPre=insUSD>0?Math.round(insUSD):"";
-   const ipucu=sn?('<div style="font-size:11px;color:var(--gold);margin:-2px 0 10px;font-weight:600;">'+ic((sn._du==="Gecikti"?'alert':'cal'),12,(sn._du==="Gecikti"?'#FF5A5A':'#F5C04A'))+' Taksit '+esc(sn.t.taksit||"")+' · vade '+(fmtDate(sn._d)||esc(sn.t.vade||""))+(sn._du==="Gecikti"?' (gecikmiş)':'')+'</div>'):'';
+   const ipucu=sn?('<div style="font-size:11px;color:var(--gold);margin:9px 0 0;font-weight:600;">'+ic((sn._du==="Gecikti"?'alert':'cal'),12,(sn._du==="Gecikti"?'#FF5A5A':'#F5C04A'))+' Taksit '+esc(sn.t.taksit||"")+' · vade '+(fmtDate(sn._d)||esc(sn.t.vade||""))+(sn._du==="Gecikti"?' (gecikmiş)':'')+'</div>'):'';
    const seg = hasKur
      ? '<div style="display:flex;gap:8px;">'
         +'<div class="opt2 on" id="pbTL" data-act="bpb" data-v="TL" style="flex:1;text-align:center;padding:11px;border-radius:11px;border:1px solid var(--line);background:#1b1b1b;font-weight:700;font-size:14px;cursor:pointer;">Türk Lirası (₺)</div>'
@@ -563,14 +568,14 @@ function sheetForm(){
      +(hasKur?'<div class="ratel">1 $ = <b>'+kurStr(k)+' ₺</b> · canlı satış</div>':'')
      +'</div>';
    return wrap("Ödeme Bildir",
-   odemeBilgiBlok()
+   '<div class="payform">'+odemeBilgiBlok()
    +'<label class="lbl">Hangi para birimiyle ödediniz?</label>'+(hasKur?seg:'<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Kur alınamadığı için tutarı USD girin.</div>')
    +tlBlok+usdBlok
    +ipucu
    +'<label class="lbl">Ödeme Tarihi (yapılan / planlanan)</label><input id="b_tar" class="field" type="date" value="'+todayISO()+'">'
    +'<label class="lbl">Yöntem</label><select id="b_yon" class="field"><option>Havale/EFT</option><option>Nakit</option><option>Kredi Kartı</option><option>Çek</option></select>'
    +'<label class="lbl">Açıklama (isteğe bağlı)</label><textarea id="b_ack" class="field" style="min-height:58px;resize:vertical;" placeholder="Örn. dekont gönderdim / gelecek hafta ödeyeceğim"></textarea>'
-   +'<button class="btnred" data-act="bildirsave">'+ic('send',16,'#fff')+' Bildirimi Gönder</button>');
+   +'<button class="btnred" data-act="bildirsave">'+ic('send',16,'#fff')+' Bildirimi Gönder</button>'+'</div>');
  }
  if(S.sheet==="sifre"){
    const ok=S.data&&S.data.odemeBildirdi;
