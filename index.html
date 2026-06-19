@@ -443,7 +443,7 @@ function cariView(){
 }
 
 /* ---------- CARİ EKSTRE PDF (yönetici paneliyle aynı antet) ---------- */
-function ekstrePdf(){
+function ekstrePdf(tk){
  const d=S.data||{}, o=d.ozet||{}; const musteri=d.firma||"Müşteri";
  const M=n=>"$"+Math.round(Number(n)||0).toLocaleString("tr-TR");
  const dd=s=>{ if(!s)return""; const p=String(s).split("-"); return p.length===3?(p[2]+"."+p[1]+"."+p[0]):String(s); };
@@ -454,7 +454,7 @@ function ekstrePdf(){
   rows+='<tr><td class="tar">'+dd(h.tarih)+'</td><td>'+esc(h.aciklama||h.tip||"")+'</td><td class="r '+(f?'borc':'dash')+'">'+(f?M(h.borc):"—")+'</td><td class="r '+(!f&&(h.alacak||0)>0?'alacak':'dash')+'">'+(!f&&(h.alacak||0)>0?M(h.alacak):"—")+'</td><td class="r bk">'+M(run)+'</td></tr>'; }
  if(!all.length) rows='<tr><td colspan="5" style="text-align:center;color:#888;padding:14px;">Hareket kaydı yok.</td></tr>';
  const tFat=Number(o.toplamFatura)||0, tTah=Number(o.toplamTahsilat)||0, tBak=(o.bakiye!=null?Number(o.bakiye):run);
- let tkHtml=""; const tks=(d.taksitler||[]).filter(t=>t.durum!=="Ödendi"&&((t.kalan!=null?t.kalan:t.tutar)>0));
+ let tkHtml=""; const tks=(tk===false)?[]:(d.taksitler||[]).filter(t=>t.durum!=="Ödendi"&&((t.kalan!=null?t.kalan:t.tutar)>0));
  if(tks.length){ const r=tks.map(t=>{const kal=(t.kalan!=null?t.kalan:t.tutar);return '<tr><td class="tar">'+dd(t.vade)+'</td><td>Taksit '+esc(t.taksit||"")+(t.odenen>0?' · '+M(t.odenen)+'/'+M(t.tutar)+' ödendi':'')+'</td><td><span class="pill">'+esc(String(t.durum||"Bekliyor").toLocaleUpperCase("tr"))+'</span></td><td class="r bk">'+M(kal)+'</td></tr>';}).join("");
   tkHtml='<div class="tkblock"><div class="sh">Açık Taksitler / Ödeme Planı</div><table class="tk"><thead><tr><th style="width:80px">Vade</th><th>Kalem</th><th>Durum</th><th class="r">Kalan</th></tr></thead><tbody>'+r+'</tbody></table></div>'; }
  const CSS=`
@@ -636,6 +636,7 @@ function odemeBilgiBlok(){
 }
 function ibanCur(want){var tabs=document.querySelectorAll(".ibtab");if(!tabs.length)return;var hit=null;tabs.forEach(function(x){if(x.getAttribute("data-cur")===want)hit=x;});if(!hit)return;tabs.forEach(function(x){x.classList.remove("on");});hit.classList.add("on");var iv=document.getElementById("ibanval"),cp=document.getElementById("ibancopy"),val=hit.getAttribute("data-iban")||"";if(iv)iv.textContent=val;if(cp)cp.setAttribute("data-v",val);}
 function sheetForm(){
+ if(S.sheet==="ekstrePdf"){var _tk=(S.ekstreTk!==false);return wrap("Cari Ekstre",'<div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">'+esc((S.data&&S.data.firma)||"")+' — PDF\'e nelerin gireceğini seç.</div>'+'<div class="c tap" data-act="ekstreTkToggle" style="padding:14px;display:flex;align-items:center;gap:12px;"><div style="width:46px;height:27px;border-radius:20px;flex-shrink:0;background:'+(_tk?"#2ED573":"#3a3a3a")+';position:relative;transition:.15s;"><div style="position:absolute;top:3px;left:'+(_tk?"22px":"3px")+';width:21px;height:21px;border-radius:50%;background:#fff;transition:.15s;"></div></div><div style="flex:1;"><div style="font-weight:700;color:#fff;font-size:13.5px;">Açık Taksitler / Ödeme Planı\'nı ekle</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px;">'+(_tk?"Taksit planı PDF\'e eklenecek":"Eklenmeyecek — sadece hesap hareketleri")+'</div></div></div>'+'<button class="btnred" data-act="ekstrePdfYap" style="margin-top:14px;">'+ic("receipt",16,"#fff")+' PDF oluştur</button>');}
  if(S.sheet==="yeniTalep") return wrap("Yeni Talep",
    '<div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">Ne talep etmek istersiniz?</div>'
    +'<div style="display:flex;flex-direction:column;gap:10px;">'
@@ -790,7 +791,9 @@ $("app").addEventListener("click",async function(e){
  else if(a==="siparisDetay"){S.pushed={t:"siparisDetay",v:+v};render();}
  else if(a==="makbuz"){S.pushed={t:"makbuz",v:+v};render();}
  else if(a==="makbuzyazdir"){try{window.print();}catch(e){toast("Yazdırma açılamadı");}}
- else if(a==="ekstrePdf"){ekstrePdf();}
+ else if(a==="ekstrePdf"){S.ekstreTk=true;S.sheet="ekstrePdf";render();}
+ else if(a==="ekstreTkToggle"){var _c=(S.ekstreTk!==false);S.ekstreTk=!_c;render();}
+ else if(a==="ekstrePdfYap"){var _tk=(S.ekstreTk!==false);S.sheet=null;render();ekstrePdf(_tk);}
  else if(a==="open"){if(v==="teklif"||v==="sifre")window.PHOTOS=[];S.sheet=v;render();}
  else if(a==="chooser"){if(v==="sifre")window.PHOTOS=[];S.sheet=v;render();}
  else if(a==="close"){S.sheet=null;render();}
