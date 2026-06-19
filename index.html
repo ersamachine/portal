@@ -185,7 +185,7 @@ const siparisPct=cur=>Math.round(cur/(SIPARIS_ASAMA.length-1)*100);
 const siparisAktif=()=>{const l=(S.data&&S.data.siparisler)||[];return l.find(o=>asamaIx(o.durum)<SIPARIS_ASAMA.length-1)||null;};
 const AY=["OCA","ŞUB","MAR","NİS","MAY","HAZ","TEM","AĞU","EYL","EKİ","KAS","ARA"];
 function tkParse(v){const d=new Date(v);return isNaN(d)?null:d;}
-function tkDurum(t){if((t.durum||"")==="Ödendi")return"Ödendi";const d=tkParse(t.vade);if(d&&d<new Date(new Date().toDateString()))return"Gecikti";return"Bekliyor";}
+function tkDurum(t){if((t.durum||"")==="Ödendi"||(t.kalan!=null&&t.kalan<=0))return"Ödendi";const d=tkParse(t.vade);if(d&&d<new Date(new Date().toDateString()))return"Gecikti";return"Bekliyor";}
 function fmtDate(d){return d?("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2)+"."+d.getFullYear():"";}
 function sonrakiTaksit(){
  const tk=((S.data&&S.data.taksitler)||[]).map(t=>({t:t,_d:tkParse(t.vade),_du:tkDurum(t)}));
@@ -206,7 +206,7 @@ function odemeHero(){
               :{bd:"#5a4d14",g1:"#3a3013",g2:"#241d0a",lab:"SONRAKİ ÖDEME",lc:"#F5C04A",cbg:"#F5A623",cfg:"#1a1a1a",ic:"clock",ch:(gun!=null?gun+" gün kaldı":"yaklaşıyor"),dt:"Son ödeme: "+tarih,btn:"btngold",btxt:"Ödeme Bildir",bic:"#1a1a1a"};
  return '<div class="payhero" style="border:1px solid '+ac.bd+';"><div style="background:linear-gradient(135deg,'+ac.g1+','+ac.g2+');padding:15px 16px 13px;">'
   +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="font-size:9px;font-weight:800;letter-spacing:.6px;color:'+ac.lc+';">'+ac.lab+' · TAKSİT '+esc(o.taksit||"")+'</div><span class="chip" style="background:'+ac.cbg+';color:'+ac.cfg+';white-space:nowrap;">'+ic(ac.ic,10,ac.cfg)+' '+ac.ch+'</span></div>'
-  +'<div class="bignum" style="font-size:30px;color:#fff;margin-top:8px;">'+money(o.tutar)+'</div><div style="font-size:12px;color:'+(gec?'#e9b4b0':'#d9cfa5')+';margin-top:2px;">'+ac.dt+'</div></div>'
+  +'<div class="bignum" style="font-size:30px;color:#fff;margin-top:8px;">'+money(o.kalan!=null?o.kalan:o.tutar)+'</div><div style="font-size:12px;color:'+(gec?'#e9b4b0':'#d9cfa5')+';margin-top:2px;">'+ac.dt+((o.odenen>0)?(' · <span style="color:#2ED573;font-weight:700;">'+money(o.odenen)+' / '+money(o.tutar)+' ödendi</span>'):'')+'</div></div>'
   +'<div style="padding:12px 16px;background:#202020;"><button class="btn '+ac.btn+'" data-act="open" data-v="bildir">'+ic('send',15,ac.bic)+' '+ac.btxt+'</button></div></div>';
 }
 function initials(s){s=(s||"").trim();if(!s)return"ER";const p=s.split(/\s+/);return ((p[0]||"")[0]||"")+((p[1]||"")[0]||(p[0]||"")[1]||"");}
@@ -259,7 +259,7 @@ function doLogout(silent){try{localStorage.removeItem("ersa_portal_auth");localS
 /* ---------- ANA SAYFA ---------- */
 function homeView(){
  const d=S.data||{},o=d.ozet||{};const neg=(o.bakiye||0)<0;
- const tk=(d.taksitler||[]);const tot=tk.reduce((s,t)=>s+(t.tutar||0),0),od=tk.filter(t=>t.durum==="Ödendi").reduce((s,t)=>s+(t.tutar||0),0);
+ const tk=(d.taksitler||[]);const tot=tk.reduce((s,t)=>s+(t.tutar||0),0),od=tk.reduce((s,t)=>s+(t.odenen!=null?t.odenen:(t.durum==="Ödendi"?t.tutar:0)),0);
  const odN=tk.filter(t=>t.durum==="Ödendi").length;const oran=tot?Math.round(od/tot*100):0;
  const ek=(d.ekstre||[]).slice(-3).reverse();
  const acikTeklif=(d.teklifler||[]).length;
@@ -371,22 +371,22 @@ function taksitlerView(){
  tk.forEach(t=>{ t._d=tkParse(t.vade); t._du=tkDurum(t); });
  tk.sort((a,b)=>(a._d||0)-(b._d||0));
  const tot=tk.reduce((s,t)=>s+(t.tutar||0),0);
- const od=tk.filter(t=>t._du==="Ödendi").reduce((s,t)=>s+(t.tutar||0),0);
+ const od=tk.reduce((s,t)=>s+(t.odenen!=null?t.odenen:(t._du==="Ödendi"?t.tutar:0)),0);
  const kalan=tot-od, odSay=tk.filter(t=>t._du==="Ödendi").length, oran=tot?Math.round(od/tot*100):0;
  const sonraki=tk.find(t=>t._du!=="Ödendi");
  const planNot=((d.taksitNot)||"").trim();
  const badge=t=>{let bg,mo,dy;if(t._du==="Ödendi"){bg="#16331F";mo="#5fd08a";dy="#cfeede";}else if(t._du==="Gecikti"){bg="#2A1414";mo="#FF8A80";dy="#fff";}else{bg="#2A2410";mo="#F5C04A";dy="#fff";}
    const moTxt=t._d?AY[t._d.getMonth()]:"—", dyTxt=t._d?("0"+t._d.getDate()).slice(-2):"–";
    return '<div class="dbadge" style="background:'+bg+';"><div class="mo" style="color:'+mo+';">'+moTxt+'</div><div class="dy" style="color:'+dy+';">'+dyTxt+'</div></div>';};
- const chp=t=>t._du==="Ödendi"?'<span class="chip chip-g">'+ic('check',10)+' Ödendi</span>':(t._du==="Gecikti"?'<span class="chip chip-r">'+ic('alert',10)+' Gecikti</span>':'<span class="chip chip-o">'+ic('clock',10)+' Bekliyor</span>');
- const trow=t=>'<div class="trow">'+badge(t)+'<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13.5px;color:#fff;">Taksit '+esc(t.taksit||"")+'</div><div style="font-size:11px;color:var(--muted);margin-top:1px;">Vade: '+(fmtDate(t._d)||esc(t.vade||"-"))+(t._du==="Ödendi"&&t.odemeTarihi?' · ödendi '+esc(t.odemeTarihi):'')+'</div></div><div style="text-align:right;"><div class="bignum" style="font-size:13.5px;color:'+(t._du==="Ödendi"?"#8A8A8A":"#fff")+';">'+money(t.tutar)+'</div><div style="margin-top:3px;">'+chp(t)+'</div></div></div>';
+ const chp=t=>t._du==="Ödendi"?'<span class="chip chip-g">'+ic('check',10)+' Ödendi</span>':(t._du==="Gecikti"?'<span class="chip chip-r">'+ic('alert',10)+' Gecikti</span>':((t.odenen>0)?'<span class="chip chip-b">'+ic('clock',10)+' Kısmi</span>':'<span class="chip chip-o">'+ic('clock',10)+' Bekliyor</span>'));
+ const trow=t=>'<div class="trow">'+badge(t)+'<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13.5px;color:#fff;">Taksit '+esc(t.taksit||"")+'</div><div style="font-size:11px;color:var(--muted);margin-top:1px;">Vade: '+(fmtDate(t._d)||esc(t.vade||"-"))+(t._du==="Ödendi"&&t.odemeTarihi?' · ödendi '+esc(t.odemeTarihi):'')+'</div></div><div style="text-align:right;"><div class="bignum" style="font-size:13.5px;color:'+(t._du==="Ödendi"?"#8A8A8A":"#fff")+';">'+money(t._du==="Ödendi"?t.tutar:(t.kalan!=null?t.kalan:t.tutar))+'</div>'+((t.odenen>0&&t._du!=="Ödendi")?'<div style="font-size:9.5px;color:#2ED573;margin-top:2px;font-weight:600;">'+money(t.odenen)+' / '+money(t.tutar)+' ödendi</div>':'')+'<div style="margin-top:3px;">'+chp(t)+'</div></div></div>';
  return '<div class="pad stg"><div class="back" data-act="back">'+ic('cl',18)+' Geri</div>'
  +'<div class="h1" style="margin-top:8px;">Taksit Planı</div><div class="sub">'+(tk.length?tk.length+' taksit':'Tanımlı taksit yok')+'</div>'
  +(tk.length?(
    '<div class="blk" style="padding:18px;margin-top:14px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div><div style="font-size:10px;color:#9b9b95;letter-spacing:1px;">KALAN TAKSİT BORCU</div><div class="bignum" style="font-size:27px;color:#fff;margin-top:4px;">'+money(kalan)+'</div></div><div style="text-align:right;"><div style="font-size:10px;color:#9b9b95;">Taksit Tutarı</div><div class="bignum" style="font-size:14px;color:#cfcfcf;">'+money(tot)+'</div><div style="font-size:9px;color:var(--muted2);margin-top:2px;">taksitlendirilen kısım</div></div></div>'
    +'<div class="prog"><div style="width:'+oran+'%;"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--muted);"><span>'+odSay+'/'+tk.length+' taksit ödendi · '+money(od)+'</span><span>%'+oran+'</span></div></div>'
    +(planNot?'<div style="margin-top:12px;background:linear-gradient(135deg,#C51515,#9b1010);border-radius:12px;padding:11px 13px;display:flex;gap:9px;align-items:flex-start;box-shadow:0 6px 16px rgba(197,21,21,.35);">'+ic('info',16,'#fff')+'<div style="min-width:0;"><div style="font-size:8.5px;color:#FFD6D6;font-weight:800;letter-spacing:.6px;margin-bottom:3px;">PLAN NOTU</div><div style="font-size:11.5px;color:#fff;font-weight:600;line-height:1.5;">'+esc(planNot)+'</div></div></div>':'')
-   +(sonraki?'<div class="c" style="margin-top:12px;padding:14px;display:flex;align-items:center;gap:12px;border-left:4px solid '+(sonraki._du==="Gecikti"?"#C51515":"#F5A623")+';">'+ic(sonraki._du==="Gecikti"?'alert':'cal',20,sonraki._du==="Gecikti"?"#FF5A5A":"#F5C04A")+'<div style="flex:1;min-width:0;"><div style="font-size:9px;font-weight:800;letter-spacing:.6px;color:'+(sonraki._du==="Gecikti"?"#FF8A80":"#F5C04A")+';">'+(sonraki._du==="Gecikti"?"GECİKMİŞ ÖDEME":"SONRAKİ ÖDEME")+'</div><div style="font-weight:700;font-size:14px;color:#fff;margin-top:2px;">Taksit '+esc(sonraki.taksit||"")+' · '+(fmtDate(sonraki._d)||esc(sonraki.vade||""))+'</div></div><div class="bignum" style="font-size:16px;color:#fff;">'+money(sonraki.tutar)+'</div></div>':'')
+   +(sonraki?'<div class="c" style="margin-top:12px;padding:14px;display:flex;align-items:center;gap:12px;border-left:4px solid '+(sonraki._du==="Gecikti"?"#C51515":"#F5A623")+';">'+ic(sonraki._du==="Gecikti"?'alert':'cal',20,sonraki._du==="Gecikti"?"#FF5A5A":"#F5C04A")+'<div style="flex:1;min-width:0;"><div style="font-size:9px;font-weight:800;letter-spacing:.6px;color:'+(sonraki._du==="Gecikti"?"#FF8A80":"#F5C04A")+';">'+(sonraki._du==="Gecikti"?"GECİKMİŞ ÖDEME":"SONRAKİ ÖDEME")+'</div><div style="font-weight:700;font-size:14px;color:#fff;margin-top:2px;">Taksit '+esc(sonraki.taksit||"")+' · '+(fmtDate(sonraki._d)||esc(sonraki.vade||""))+'</div></div><div class="bignum" style="font-size:16px;color:#fff;">'+money(sonraki.kalan!=null?sonraki.kalan:sonraki.tutar)+'</div></div>':'')
    +'<div class="sec">Ödeme Planı</div><div class="c" style="padding:4px 15px;">'+tk.map(trow).join('')+'</div>'
  ):'<div class="c" style="padding:22px;margin-top:14px;text-align:center;color:var(--muted);">Henüz taksit planınız tanımlı değil.</div>')
  +'</div>';
