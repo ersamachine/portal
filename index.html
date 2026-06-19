@@ -8,9 +8,10 @@
 :root{--red:#C51515;--redsoft:#2C2C2C;--ink:#FFFFFF;--black:#181818;--bg:#111111;--soft:#2C2C2C;--line:#383838;--muted:#8A8A8A;--muted2:#5A5A5A;--gold:#F5A623;--green:#2ED573;--blue:#5B8DEF;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 .disp{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',system-ui,sans-serif;}
-body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',system-ui,sans-serif;background:#0B0B0B;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px 12px;}
-.phone{width:380px;max-width:100%;height:812px;background:#0e0e0e;border-radius:46px;padding:5px;box-shadow:0 40px 80px rgba(0,0,0,.4);}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',system-ui,sans-serif;background:#0B0B0B;min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:22px 12px;}
+.phone{width:390px;max-width:100%;height:812px;max-height:94vh;background:#0e0e0e;border-radius:46px;padding:5px;box-shadow:0 40px 80px rgba(0,0,0,.4);}
 .inner{width:100%;height:100%;background:var(--bg);border-radius:41px;overflow:hidden;display:flex;flex-direction:column;position:relative;color:#CFCFCF;}
+@media(max-width:560px){body{padding:0;align-items:stretch;justify-content:stretch;}.phone{width:100%;max-width:100%;height:100vh;height:100dvh;max-height:none;border-radius:0;padding:0;box-shadow:none;}.inner{border-radius:0;}}
 .sbar{height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 22px 0;font-size:11px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
 .island{width:58px;height:15px;background:#0e0e0e;border-radius:11px;}
 .scr{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;}.scr::-webkit-scrollbar{width:0;}
@@ -434,9 +435,103 @@ function cariView(){
  const bil=(d.bildirimler||[]);
  return '<div class="pad stg"><div class="back" data-act="back">'+ic('cl',18)+' Geri</div>'
  +'<div class="blk" style="padding:18px;margin-top:6px;text-align:center;"><div style="font-size:10px;color:#9b9b95;letter-spacing:1px;">GÜNCEL BAKİYE ($)</div><div class="bignum" style="font-size:30px;color:#fff;margin-top:5px;">'+money(Math.abs(o.bakiye||0))+'</div>'+(kurSatis()?'<div style="font-size:12px;color:#cdcdc7;margin-top:4px;">≈ <b style="color:#fff;">'+fmtTL(Math.abs(o.bakiye||0)*kurSatis().satis)+'</b> <span style="color:#9b9b95;">· 1$ = '+kurStr(kurSatis())+' ₺</span></div>':'')+'<div style="display:flex;justify-content:center;gap:24px;margin-top:14px;"><div><div style="font-size:10px;color:#9b9b95;">Fatura</div><div class="bignum" style="font-weight:700;font-size:14px;color:#fff;">'+money(o.toplamFatura)+'</div></div><div><div style="font-size:10px;color:#9b9b95;">Tahsilat</div><div class="bignum" style="font-weight:700;font-size:14px;color:var(--green);">'+money(o.toplamTahsilat)+'</div></div></div></div>'
+ +'<button class="btng" data-act="ekstrePdf" style="margin-top:12px;">'+ic('receipt',16)+' Cari Ekstre · PDF indir</button>'
  +'<div class="sec">Ekstre</div><div class="c" style="padding:2px 15px 8px;">'+(rows||'<div class="empty">Hareket yok.</div>')+'</div>'
  +(bil.length?'<div class="sec">Ödeme Bildirimlerim</div><div class="c" style="padding:2px 15px 8px;">'+bil.map((b,i)=>'<div class="lrow"><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;">'+money(b.tutar,b.pb==='TL'?'₺':'$')+' · '+esc(b.yontem||'')+'</div><div style="font-size:11px;color:var(--muted);">'+esc(b.zaman||'')+'</div></div><div style="display:flex;align-items:center;gap:8px;">'+(b.durum==='Onaylandı'?'<span class="tap" data-act="makbuz" data-v="'+i+'" style="font-size:11px;font-weight:700;color:#5fd08a;display:inline-flex;align-items:center;gap:3px;">'+ic('receipt',13,'#5fd08a')+' Makbuz</span>':'')+chip(b.durum)+'</div></div>').join('')+'</div>':'')
  +'</div>';
+}
+
+/* ---------- CARİ EKSTRE PDF (yönetici paneliyle aynı antet) ---------- */
+function ekstrePdf(){
+ const d=S.data||{}, o=d.ozet||{}; const musteri=d.firma||"Müşteri";
+ const M=n=>"$"+Math.round(Number(n)||0).toLocaleString("tr-TR");
+ const dd=s=>{ if(!s)return""; const p=String(s).split("-"); return p.length===3?(p[2]+"."+p[1]+"."+p[0]):String(s); };
+ const t0=new Date(), tg=("0"+t0.getDate()).slice(-2)+"."+("0"+(t0.getMonth()+1)).slice(-2)+"."+t0.getFullYear();
+ const all=(d.ekstre||[]).slice(); const N=14; let rows="",run=0,start=0;
+ if(all.length>N){ const cut=all.length-N; for(let i=0;i<cut;i++){ run+=(all[i].borc||0)-(all[i].alacak||0); } rows+='<tr><td class="tar">—</td><td>Devreden bakiye (önceki hareketler)</td><td class="r">—</td><td class="r">—</td><td class="r bk">'+M(run)+'</td></tr>'; start=cut; }
+ for(let i=start;i<all.length;i++){ const h=all[i]; run+=(h.borc||0)-(h.alacak||0); const f=(h.borc||0)>0;
+  rows+='<tr><td class="tar">'+dd(h.tarih)+'</td><td>'+esc(h.aciklama||h.tip||"")+'</td><td class="r '+(f?'borc':'dash')+'">'+(f?M(h.borc):"—")+'</td><td class="r '+(!f&&(h.alacak||0)>0?'alacak':'dash')+'">'+(!f&&(h.alacak||0)>0?M(h.alacak):"—")+'</td><td class="r bk">'+M(run)+'</td></tr>'; }
+ if(!all.length) rows='<tr><td colspan="5" style="text-align:center;color:#888;padding:14px;">Hareket kaydı yok.</td></tr>';
+ const tFat=Number(o.toplamFatura)||0, tTah=Number(o.toplamTahsilat)||0, tBak=(o.bakiye!=null?Number(o.bakiye):run);
+ let tkHtml=""; const tks=(d.taksitler||[]).filter(t=>t.durum!=="Ödendi"&&((t.kalan!=null?t.kalan:t.tutar)>0));
+ if(tks.length){ const r=tks.map(t=>{const kal=(t.kalan!=null?t.kalan:t.tutar);return '<tr><td class="tar">'+dd(t.vade)+'</td><td>Taksit '+esc(t.taksit||"")+(t.odenen>0?' · '+M(t.odenen)+'/'+M(t.tutar)+' ödendi':'')+'</td><td><span class="pill">'+esc(String(t.durum||"Bekliyor").toLocaleUpperCase("tr"))+'</span></td><td class="r bk">'+M(kal)+'</td></tr>';}).join("");
+  tkHtml='<div class="tkblock"><div class="sh">Açık Taksitler / Ödeme Planı</div><table class="tk"><thead><tr><th style="width:80px">Vade</th><th>Kalem</th><th>Durum</th><th class="r">Kalan</th></tr></thead><tbody>'+r+'</tbody></table></div>'; }
+ const CSS=`
+  :root{--ink:#1f242b;--slate:#2f343c;--muted:#737a84;--line:#e4e6ea;--soft:#f6f7f9;--green:#1F8B4C;--borc:#981224;--brand:#981224}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:letter;margin:0}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#54585e;color:var(--ink)}
+  .bar{position:sticky;top:0;display:flex;align-items:center;gap:14px;background:#1b1b1b;color:#ddd;padding:11px 16px;font-size:12.5px}
+  .bar button{background:#981224;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer}
+  .bar span{color:#9aa0a6}
+  @media print{.bar{display:none}}
+  .page{position:relative;width:215.9mm;min-height:279.4mm;margin:14px auto;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.45);overflow:hidden;display:flex;flex-direction:column}
+  @media print{.page{margin:0;box-shadow:none}}
+  .lh{position:relative;height:128px;flex-shrink:0}
+  .lh .band{position:absolute;left:0;top:0;width:53%;height:100%;background:var(--slate);display:flex;align-items:center;padding-left:50px}
+  .lh .tab{position:absolute;right:0;top:0;width:92px;height:100%;background:var(--slate)}
+  .lh .title{position:absolute;right:120px;top:0;height:100%;display:flex;flex-direction:column;justify-content:center;text-align:right;font-family:'Cormorant Garamond',serif;color:var(--slate);font-size:31px;font-weight:600;letter-spacing:3px;line-height:1.08}
+  .logo{position:relative;padding:9px 27px}
+  .logo .wm{display:block;font-family:'Montserrat',sans-serif;font-weight:800;color:#fff;font-size:23px;letter-spacing:.2px;line-height:1}
+  .logo .est{display:block;font-family:'Montserrat',sans-serif;font-weight:700;color:#fff;font-size:8.5px;letter-spacing:4px;text-align:center;margin-top:5px}
+  .logo:before{content:"";position:absolute;left:0;top:2px;bottom:-2px;width:25px;border-left:3px solid #fff;border-bottom:3px solid #fff}
+  .logo:after{content:"";position:absolute;right:0;top:-2px;bottom:2px;width:25px;border-right:3px solid #fff;border-top:3px solid #fff}
+  .accent{height:5px;background:linear-gradient(90deg,var(--brand) 0 62%,var(--slate) 62% 100%);flex-shrink:0}
+  .body{flex:1;padding:30px 46px 26px}
+  .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:20px}
+  .cust .lbl{font-size:9px;letter-spacing:1.8px;color:var(--brand);font-weight:800}
+  .cust .nm{font-size:21px;font-weight:800;color:var(--ink);margin:4px 0 5px;letter-spacing:-.3px}
+  .meta{font-size:10px;color:#5b626b;text-align:right;line-height:1.85;white-space:nowrap}
+  .meta b{color:var(--ink)}
+  .sum{display:flex;gap:12px;margin-bottom:24px}
+  .sum .c{flex:1;padding:13px 17px;border-radius:10px;border:1px solid var(--line);background:var(--soft)}
+  .sum .c span{display:block;font-size:8px;letter-spacing:1.2px;color:var(--muted);font-weight:700;text-transform:uppercase}
+  .sum .c b{font-size:18px;font-weight:800;margin-top:5px;display:block;color:var(--ink)}
+  .sum .c b.g{color:var(--green)}
+  .sum .c.bak{background:var(--brand);border-color:var(--brand)}
+  .sum .c.bak span{color:#f2c9cf}.sum .c.bak b{color:#fff}
+  .sh{font-size:9.5px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--slate);margin:0 0 9px;display:flex;align-items:center;gap:10px}
+  .sh:after{content:"";flex:1;height:1px;background:var(--line)}
+  table{width:100%;border-collapse:collapse;font-size:10.5px;border-radius:9px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+  thead th{background:var(--slate);color:#fff;font-size:8px;letter-spacing:.6px;text-transform:uppercase;font-weight:700;text-align:left;padding:8px 10px}
+  thead th.r{text-align:right}
+  tbody td{padding:7px 10px;color:#33383f}
+  tbody tr:nth-child(even){background:var(--soft)}
+  tbody td.r{text-align:right;white-space:nowrap}
+  .tar{color:#7c828b;white-space:nowrap}
+  .borc{color:var(--borc);font-weight:700}.alacak{color:var(--green);font-weight:700}.bk{font-weight:800;color:var(--ink)}.dash{color:#c2c6cc}
+  tfoot td{padding:9px 10px;font-weight:800;font-size:10.5px;background:#fbeef0;color:var(--ink);border-top:2px solid var(--brand)}
+  tfoot td.r{text-align:right}
+  .tkblock{margin-top:16px}
+  .pill{display:inline-block;font-size:8px;font-weight:800;padding:2px 8px;border-radius:20px;background:#fdf0d9;color:#9a6b00;letter-spacing:.3px}
+  .note{margin-top:16px;font-size:9px;color:#9aa0a6}
+  .botbar{margin-top:auto;background:var(--slate);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:15px 50px;font-size:10.5px;font-weight:600;letter-spacing:.4px;flex-shrink:0}
+  .botbar svg{display:block}
+`;
+ const doc='<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cari Ekstre · '+esc(musteri)+'</title>'
+  +'<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">'
+  +'<style>'+CSS+'</style></head><body>'
+  +'<div class="bar"><button onclick="window.print()">⬇ PDF olarak kaydet</button><span>Açılan pencerede “Hedef”i <b>PDF olarak kaydet</b> seçin.</span></div>'
+  +'<div class="page">'
+    +'<div class="lh"><div class="band"><div class="logo"><span class="wm">ersa machinery</span><span class="est">ESTD 2021</span></div></div><div class="title">CARİ HESAP<br>EKSTRESİ</div><div class="tab"></div></div>'
+    +'<div class="accent"></div>'
+    +'<div class="body">'
+      +'<div class="row1"><div class="cust"><div class="lbl">CARİ HESAP</div><div class="nm">'+esc(musteri)+'</div></div>'
+      +'<div class="meta">Ekstre tarihi: <b>'+tg+'</b><br>Para birimi: <b>USD ($)</b><br>Dönem: <b>Tüm hareketler</b></div></div>'
+      +'<div class="sum"><div class="c"><span>Toplam Fatura</span><b>'+M(tFat)+'</b></div><div class="c"><span>Toplam Tahsilat</span><b class="g">'+M(tTah)+'</b></div><div class="c bak"><span>Güncel Bakiye</span><b>'+M(tBak)+'</b></div></div>'
+      +'<div class="sh">Hesap Hareketleri</div>'
+      +'<table><thead><tr><th style="width:78px">Tarih</th><th>Açıklama</th><th class="r">Borç</th><th class="r">Alacak</th><th class="r">Bakiye</th></tr></thead><tbody>'+rows+'</tbody>'
+      +'<tfoot><tr><td colspan="2">TOPLAM</td><td class="r borc">'+M(tFat)+'</td><td class="r alacak">'+M(tTah)+'</td><td class="r bk">'+M(tBak)+'</td></tr></tfoot></table>'
+      +tkHtml
+      +'<div class="note">Bu ekstre bilgilendirme amaçlıdır. Mutabakat için muhasebe departmanımızla iletişime geçiniz.</div>'
+    +'</div>'
+    +'<div class="botbar"><div>info@ersamachinery.com</div><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.4 12 4l9 7.4"/><path d="M5.5 9.8V20h13V9.8"/></svg><div>www.ersamachinery.com</div></div>'
+  +'</div>'
+  +'<scr'+'ipt>window.onload=function(){setTimeout(function(){try{window.focus();window.print();}catch(_){}}, 500);};</scr'+'ipt>'
+  +'</body></html>';
+ const w=window.open("","_blank");
+ if(!w){ toast("PDF için açılır pencereye izin verin"); return; }
+ w.document.open(); w.document.write(doc); w.document.close();
 }
 
 /* ---------- ÖDEMELERİM + MAKBUZ ---------- */
@@ -694,6 +789,7 @@ $("app").addEventListener("click",async function(e){
  else if(a==="siparisDetay"){S.pushed={t:"siparisDetay",v:+v};render();}
  else if(a==="makbuz"){S.pushed={t:"makbuz",v:+v};render();}
  else if(a==="makbuzyazdir"){try{window.print();}catch(e){toast("Yazdırma açılamadı");}}
+ else if(a==="ekstrePdf"){ekstrePdf();}
  else if(a==="open"){if(v==="teklif"||v==="sifre")window.PHOTOS=[];S.sheet=v;render();}
  else if(a==="chooser"){if(v==="sifre")window.PHOTOS=[];S.sheet=v;render();}
  else if(a==="close"){S.sheet=null;render();}
