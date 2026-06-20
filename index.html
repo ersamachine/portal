@@ -683,6 +683,26 @@ function pdfOverlay(){
   +'<iframe id="pdfframe" srcdoc="'+esc(S.pdfDoc||"")+'" style="flex:1;width:100%;border:none;background:#54585e;display:block;"></iframe>'
  +'</div>';
 }
+function gecikmeFaizi(){
+ var RATE=0.05; var out={kalemler:[],anapara:0,faiz:0,onerilen:0};
+ var t0=new Date(); t0.setHours(0,0,0,0);
+ ((S.data&&S.data.taksitler)||[]).forEach(function(t){
+   if(String(t.durum)==='Ödendi')return;
+   var kalan=(t.kalan!=null?t.kalan:t.tutar)||0; if(kalan<=0)return;
+   var d=new Date(t.vade); if(isNaN(d.getTime()))return; d.setHours(0,0,0,0);
+   var gun=Math.round((t0-d)/86400000); if(gun<=0)return;
+   var faiz=Math.round(kalan*RATE*(gun/30));
+   out.kalemler.push({taksit:t.taksit||'',gun:gun,kalan:kalan,faiz:faiz}); out.anapara+=kalan; out.faiz+=faiz;
+ });
+ out.onerilen=out.anapara+out.faiz; return out;
+}
+window.faizYaz=function(usd){
+ try{ var blTL=document.getElementById('blTL'),blUSD=document.getElementById('blUSD'),pu=document.getElementById('pbUSD'),pt=document.getElementById('pbTL');
+   if(blTL&&blUSD){ blTL.style.display='none'; blUSD.style.display='block'; }
+   if(pu)pu.classList.add('on'); if(pt)pt.classList.remove('on');
+   var ui=document.getElementById('b_usd_in'); if(ui){ ui.value=usd; if(typeof bHesapUsd==='function')bHesapUsd(); }
+ }catch(e){}
+};
 function sheetForm(){
  if(S.sheet==="pdfview") return pdfOverlay();
  if(S.sheet==="ekstrePdf"){var _tk=(S.ekstreTk!==false);return wrap("Cari Ekstre",'<div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">'+esc((S.data&&S.data.firma)||"")+' — PDF\'e nelerin gireceğini seç.</div>'+'<div class="c tap" data-act="ekstreTkToggle" style="padding:14px;display:flex;align-items:center;gap:12px;"><div style="width:46px;height:27px;border-radius:20px;flex-shrink:0;background:'+(_tk?"#2ED573":"#3a3a3a")+';position:relative;transition:.15s;"><div style="position:absolute;top:3px;left:'+(_tk?"22px":"3px")+';width:21px;height:21px;border-radius:50%;background:#fff;transition:.15s;"></div></div><div style="flex:1;"><div style="font-weight:700;color:#fff;font-size:13.5px;">Açık Taksitler / Ödeme Planı\'nı ekle</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px;">'+(_tk?"Taksit planı PDF\'e eklenecek":"Eklenmeyecek — sadece hesap hareketleri")+'</div></div></div>'+'<button class="btnred" data-act="ekstrePdfYap" style="margin-top:14px;">'+ic("receipt",16,"#fff")+' PDF oluştur</button>');}
@@ -703,6 +723,19 @@ function sheetForm(){
    const insUSD=sn?(sn.t.tutar||0):0;
    const tlPre=(hasKur&&insUSD>0)?Math.round(insUSD*rate):"";
    const usdPre=insUSD>0?Math.round(insUSD):"";
+   const gf=gecikmeFaizi();
+   const faizKart=gf.kalemler.length?(
+     '<div class="c" style="padding:0;overflow:hidden;border:1px solid #4a2c12;margin-bottom:13px;">'
+     +'<div style="display:flex;align-items:center;gap:11px;padding:13px 14px;background:#2A1810;"><div style="width:34px;height:34px;border-radius:11px;background:#3a2410;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+ic('alert',17,'#F5A623')+'</div><div style="flex:1;"><div style="font-weight:700;color:#fff;font-size:13px;">Gecikme Faizi (aylık %5)</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">'+gf.kalemler.length+' vadesi geçmiş taksit · gün sayısına göre</div></div></div>'
+     +'<div style="padding:11px 15px;border-top:1px solid #2a2a2a;background:#1c1c1c;">'
+     +gf.kalemler.map(function(k){return '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:11.5px;"><span style="color:var(--muted);">'+esc(k.taksit||'Taksit')+' · '+k.gun+' gün · $'+Math.round(k.kalan).toLocaleString("tr-TR")+'</span><span style="color:#F5A623;font-weight:700;" class="bignum">+$'+Math.round(k.faiz).toLocaleString("tr-TR")+'</span></div>';}).join('')
+     +'<div style="height:1px;background:#2a2a2a;margin:6px 0;"></div>'
+     +'<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12.5px;"><span style="color:#ddd;">Anapara (vadesi geçen)</span><span style="color:#fff;font-weight:700;" class="bignum">$'+Math.round(gf.anapara).toLocaleString("tr-TR")+'</span></div>'
+     +'<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12.5px;"><span style="color:#F5A623;">Gecikme faizi (%5)</span><span style="color:#F5A623;font-weight:800;" class="bignum">+$'+Math.round(gf.faiz).toLocaleString("tr-TR")+'</span></div>'
+     +'<div style="display:flex;justify-content:space-between;padding:6px 0 2px;font-size:13.5px;"><span style="color:#fff;font-weight:800;">Önerilen (faiz dahil)</span><span style="color:#2ED573;font-weight:800;font-size:15px;" class="bignum">$'+Math.round(gf.onerilen).toLocaleString("tr-TR")+'</span></div>'
+     +'<button type="button" class="btng" style="margin-top:9px;border-color:#4a2c12;" onclick="faizYaz('+gf.onerilen+')">'+ic('check',15,'#F5A623')+' Bu tutarı yaz ($'+Math.round(gf.onerilen).toLocaleString("tr-TR")+')</button>'
+     +'</div></div>'
+   ):'';
    const ipucu=sn?('<div style="font-size:11px;color:var(--gold);margin:9px 0 0;font-weight:600;">'+ic((sn._du==="Gecikti"?'alert':'cal'),12,(sn._du==="Gecikti"?'#FF5A5A':'#F5C04A'))+' Taksit '+esc(sn.t.taksit||"")+' · vade '+(fmtDate(sn._d)||esc(sn.t.vade||""))+(sn._du==="Gecikti"?' (gecikmiş)':'')+'</div>'):'';
    const seg = hasKur
      ? '<div class="seg">'
@@ -722,6 +755,7 @@ function sheetForm(){
      +'</div>';
    return wrap("Ödeme Bildir",
    '<div class="payform">'
+   +faizKart
    +'<label class="lbl">Hangi para birimiyle ödediniz?</label>'+(hasKur?seg:'<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Kur alınamadığı için tutarı USD girin.</div>')
    +tlBlok+usdBlok
    +ipucu
