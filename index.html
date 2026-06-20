@@ -720,19 +720,19 @@ function sheetForm(){
  if(S.sheet==="bildir"){
    const sn=sonrakiTaksit();
    const k=kurSatis(); const rate=k?k.satis:0; const hasKur=rate>0;
-   const insUSD=sn?(sn.t.tutar||0):0;
+   const insUSD=sn?(((sn.t.kalan!=null?sn.t.kalan:sn.t.tutar))||0):0;
    const tlPre=(hasKur&&insUSD>0)?Math.round(insUSD*rate):"";
    const usdPre=insUSD>0?Math.round(insUSD):"";
    const gf=gecikmeFaizi();
    const faizKart=gf.kalemler.length?(
      '<div class="c" style="padding:0;overflow:hidden;border:1px solid #4a2c12;margin-bottom:13px;">'
-     +'<div style="display:flex;align-items:center;gap:11px;padding:13px 14px;background:#2A1810;"><div style="width:34px;height:34px;border-radius:11px;background:#3a2410;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+ic('alert',17,'#F5A623')+'</div><div style="flex:1;"><div style="font-weight:700;color:#fff;font-size:13px;">Gecikme Faizi (aylık %5)</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">'+gf.kalemler.length+' vadesi geçmiş taksit · gün sayısına göre</div></div></div>'
+     +'<div style="display:flex;align-items:center;gap:11px;padding:13px 14px;background:#2A1810;"><div style="width:34px;height:34px;border-radius:11px;background:#3a2410;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+ic('alert',17,'#F5A623')+'</div><div style="flex:1;"><div style="font-weight:700;color:#fff;font-size:13px;">Gecikme Farkı (aylık %5)</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">'+gf.kalemler.length+' vadesi geçmiş taksit · gün sayısına göre</div></div></div>'
      +'<div style="padding:11px 15px;border-top:1px solid #2a2a2a;background:#1c1c1c;">'
      +gf.kalemler.map(function(k){return '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:11.5px;"><span style="color:var(--muted);">'+esc(k.taksit||'Taksit')+' · '+k.gun+' gün · $'+Math.round(k.kalan).toLocaleString("tr-TR")+'</span><span style="color:#F5A623;font-weight:700;" class="bignum">+$'+Math.round(k.faiz).toLocaleString("tr-TR")+'</span></div>';}).join('')
      +'<div style="height:1px;background:#2a2a2a;margin:6px 0;"></div>'
      +'<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12.5px;"><span style="color:#ddd;">Anapara (vadesi geçen)</span><span style="color:#fff;font-weight:700;" class="bignum">$'+Math.round(gf.anapara).toLocaleString("tr-TR")+'</span></div>'
-     +'<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12.5px;"><span style="color:#F5A623;">Gecikme faizi (%5)</span><span style="color:#F5A623;font-weight:800;" class="bignum">+$'+Math.round(gf.faiz).toLocaleString("tr-TR")+'</span></div>'
-     +'<div style="display:flex;justify-content:space-between;padding:6px 0 2px;font-size:13.5px;"><span style="color:#fff;font-weight:800;">Önerilen (faiz dahil)</span><span style="color:#2ED573;font-weight:800;font-size:15px;" class="bignum">$'+Math.round(gf.onerilen).toLocaleString("tr-TR")+'</span></div>'
+     +'<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12.5px;"><span style="color:#F5A623;">Gecikme farkı (%5)</span><span style="color:#F5A623;font-weight:800;" class="bignum">+$'+Math.round(gf.faiz).toLocaleString("tr-TR")+'</span></div>'
+     +'<div style="display:flex;justify-content:space-between;padding:6px 0 2px;font-size:13.5px;"><span style="color:#fff;font-weight:800;">Önerilen (fark dahil)</span><span style="color:#2ED573;font-weight:800;font-size:15px;" class="bignum">$'+Math.round(gf.onerilen).toLocaleString("tr-TR")+'</span></div>'
      +'<button type="button" class="btng" style="margin-top:9px;border-color:#4a2c12;" onclick="faizYaz('+gf.onerilen+')">'+ic('check',15,'#F5A623')+' Bu tutarı yaz ($'+Math.round(gf.onerilen).toLocaleString("tr-TR")+')</button>'
      +'</div></div>'
    ):'';
