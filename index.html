@@ -183,6 +183,25 @@ function kurStr(k){ return Number(k.satis).toLocaleString("tr-TR",{minimumFracti
 function bakiyeTL(bakiyeUSD){ const k=kurSatis(); if(!k)return''; const tl=Math.abs(bakiyeUSD||0)*k.satis; return '<div style="font-size:11.5px;color:#cdcdc7;margin-top:7px;">≈ <b style="color:#fff;">'+fmtTL(tl)+'</b> <span style="color:var(--muted);">· 1$ = '+kurStr(k)+' ₺ '+esc(k.kaynak||'')+(k.bayat?' · gün içi':' satış')+'</span></div>'; }
 function bHesap(){ try{ var el=document.getElementById("b_tl"); if(!el)return; var tl=parseFloat(String(el.value||"0").replace(",","."))||0; var r=parseFloat(el.getAttribute("data-rate"))||0; var usd=r>0?tl/r:0; var o=document.getElementById("b_usd"); if(o)o.textContent="≈ $"+Math.round(usd).toLocaleString("tr-TR"); }catch(e){} }
 function bHesapUsd(){ try{ var el=document.getElementById("b_usd_in"); if(!el)return; var usd=parseFloat(String(el.value||"0").replace(",","."))||0; var r=parseFloat(el.getAttribute("data-rate"))||0; var tl=r>0?usd*r:0; var o=document.getElementById("b_tleq"); if(o)o.textContent=(usd>0&&r>0)?("≈ ₺"+Math.round(tl).toLocaleString("tr-TR")):""; }catch(e){} }
+/* Kredi kartı %3,5 komisyon (sadece ₺ + Kredi Kartı) */
+function bKomTik(){ var h=document.getElementById("b_kom"); if(!h)return; h.value=(h.value==="1"?"0":"1"); bKom(); }
+function bKom(){ try{
+  var kk=document.getElementById("komKart"); if(!kk)return;
+  var tlEl=document.getElementById("blTL"); var tlVis=tlEl&&tlEl.style.display!=="none";
+  var yonEl=document.getElementById("b_yon"); var yon=yonEl?yonEl.value:"";
+  var aktif=tlVis&&yon==="Kredi Kartı";
+  kk.style.display=aktif?"block":"none";
+  if(!aktif)return;
+  var tl=parseFloat(String((document.getElementById("b_tl")||{}).value||"0").replace(",","."))||0;
+  var h=document.getElementById("b_kom"); var ekstra=h&&h.value==="1";
+  var kom=Math.round(tl*0.035); var cek=ekstra?tl+kom:tl; var net=ekstra?tl:tl-kom;
+  var f=function(n){return "₺"+Math.round(n).toLocaleString("tr-TR");};
+  var set=function(id,t){var e=document.getElementById(id);if(e)e.textContent=t;};
+  set("kom_tutar",f(tl)); set("kom_kom",(ekstra?"+":"−")+f(kom)); set("kom_cek",f(cek)); set("kom_net",f(net));
+  set("kom_lbl",ekstra?"Komisyon karttan EKSTRA çekilir":"Komisyon tutarın İÇİNDEN düşülür");
+  var tg=document.getElementById("kom_tg"),kn=document.getElementById("kom_knob");
+  if(tg)tg.style.background=ekstra?"#2ED573":"#3a3a3a"; if(kn)kn.style.left=ekstra?"22px":"3px";
+}catch(e){} }
 const parseDate=v=>{if(!v)return null;const d=new Date(v);return isNaN(d)?null:(d.setHours(0,0,0,0),d);};
 const fmtD=d=>{const x=parseDate(d);if(!x)return"";return String(x.getDate()).padStart(2,"0")+"."+String(x.getMonth()+1).padStart(2,"0")+"."+x.getFullYear();};
 const toISO=v=>{const d=parseDate(v);return d?d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"):"";};
@@ -693,7 +712,7 @@ function sheetForm(){
      : '';
    const tlBlok='<div id="blTL"'+(hasKur?'':' style="display:none;"')+'>'
      +'<label class="lbl">Ödediğiniz tutar (₺)</label>'
-     +'<div class="amt"><span class="cur">₺</span><input id="b_tl" type="number" inputmode="decimal" placeholder="0" value="'+tlPre+'" data-rate="'+rate+'" oninput="bHesap()"><span class="eq" id="b_usd">≈ $'+(insUSD>0?Math.round(insUSD).toLocaleString("tr-TR"):"0")+'</span></div>'
+     +'<div class="amt"><span class="cur">₺</span><input id="b_tl" type="number" inputmode="decimal" placeholder="0" value="'+tlPre+'" data-rate="'+rate+'" oninput="bHesap();bKom()"><span class="eq" id="b_usd">≈ $'+(insUSD>0?Math.round(insUSD).toLocaleString("tr-TR"):"0")+'</span></div>'
      +'<div class="ratel">'+(hasKur?('1 $ = <b>'+kurStr(k)+' ₺</b> · canlı satış · bakiyenize USD karşılığı düşülür'):'kur alınamadı, tutarı USD girin')+'</div>'
      +'</div>';
    const usdBlok='<div id="blUSD"'+(hasKur?' style="display:none;"':'')+'>'
@@ -709,7 +728,22 @@ function sheetForm(){
    +odemeBilgiBlok()
    +'<div class="two">'
      +'<div><label class="lbl">Ödeme Tarihi</label><input id="b_tar" class="field" type="date" value="'+todayISO()+'"></div>'
-     +'<div><label class="lbl">Yöntem</label><select id="b_yon" class="field"><option>Havale/EFT</option><option>Nakit</option><option>Kredi Kartı</option><option>Çek</option></select></div>'
+     +'<div><label class="lbl">Yöntem</label><select id="b_yon" class="field" onchange="bKom()"><option>Havale/EFT</option><option>Nakit</option><option>Kredi Kartı</option><option>Çek</option></select></div>'
+   +'</div>'
+   +'<input type="hidden" id="b_kom" value="0">'
+   +'<div id="komKart" style="display:none;margin-bottom:13px;border:1px solid #3a2a12;border-radius:18px;overflow:hidden;">'
+     +'<div onclick="bKomTik()" class="tap" style="display:flex;align-items:center;gap:11px;padding:13px 14px;background:#241d0a;cursor:pointer;">'
+       +'<div style="width:34px;height:34px;border-radius:11px;background:#3a2e10;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+ic("wallet",17,"#F5A623")+'</div>'
+       +'<div style="flex:1;min-width:0;"><div style="font-weight:700;color:#fff;font-size:13px;">Komisyonu üzerine ekle (ekstra çek)</div><div id="kom_lbl" style="font-size:11px;color:var(--muted);margin-top:2px;">Komisyon tutarın İÇİNDEN düşülür</div></div>'
+       +'<div id="kom_tg" style="position:relative;width:46px;height:27px;border-radius:20px;flex-shrink:0;background:#3a3a3a;transition:.15s;"><div id="kom_knob" style="position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.15s;"></div></div>'
+     +'</div>'
+     +'<div style="padding:12px 15px;border-top:1px solid #2a2a2a;background:#1c1c1c;">'
+       +'<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12.5px;"><span style="color:var(--muted);">Girilen tutar</span><span id="kom_tutar" class="bignum" style="color:#EDEDED;font-weight:600;">₺0</span></div>'
+       +'<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12.5px;"><span style="color:var(--muted);">Kredi kartı komisyonu (%3,5)</span><span id="kom_kom" class="bignum" style="color:#F5A623;font-weight:700;">₺0</span></div>'
+       +'<div style="height:1px;background:#2a2a2a;margin:6px 0;"></div>'
+       +'<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:13px;"><span style="color:#fff;font-weight:700;">Karttan çekilecek</span><span id="kom_cek" class="bignum" style="color:#fff;font-weight:800;">₺0</span></div>'
+       +'<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:13px;"><span style="color:#2ED573;font-weight:700;">Hesabınıza işlenecek</span><span id="kom_net" class="bignum" style="color:#2ED573;font-weight:800;">₺0</span></div>'
+     +'</div>'
    +'</div>'
    +'<label class="lbl">Açıklama (isteğe bağlı)</label><textarea id="b_ack" class="field" style="min-height:58px;resize:vertical;" placeholder="Örn. dekont gönderdim / gelecek hafta ödeyeceğim"></textarea>'
    +'<button class="btnred" data-act="bildirsave">'+ic('send',16,'#fff')+' Bildirimi Gönder</button>'+'</div>');
@@ -844,14 +878,21 @@ $("app").addEventListener("click",async function(e){
    }catch(e3){S.loginErr="Bağlantı kurulamadı.";S.kod="";S.sifre="";render();}}
  else if(a==="bpb"){ const tl=$("blTL"),us=$("blUSD"),pt=$("pbTL"),pu=$("pbUSD"); if(!tl||!us)return;
    if(v==="TL"){ tl.style.display="block"; us.style.display="none"; if(pt){pt.classList.add("on");pt.style.color="#fff";} if(pu){pu.classList.remove("on");pu.style.color="var(--muted)";} bHesap(); }
-   else { tl.style.display="none"; us.style.display="block"; if(pu){pu.classList.add("on");pu.style.color="#fff";} if(pt){pt.classList.remove("on");pt.style.color="var(--muted)";} } ibanCur(v==="TL"?"TL":"USD"); }
+   else { tl.style.display="none"; us.style.display="block"; if(pu){pu.classList.add("on");pu.style.color="#fff";} if(pt){pt.classList.remove("on");pt.style.color="var(--muted)";} } ibanCur(v==="TL"?"TL":"USD"); bKom(); }
  else if(a==="bildirsave"){
    const tlVisible = $("blTL") && $("blTL").style.display!=="none";
    if(tlVisible){
      const tlEl=$("b_tl"); const tl=parseFloat(String(tlEl.value||"").replace(",","."))||0;
      const rate=parseFloat(tlEl.getAttribute("data-rate"))||0;
-     const usd=rate>0?Math.round((tl/rate)*100)/100:0;
-     await submit("bildirim",{tutar:tl,pb:"₺",kur:rate,usdKarsilik:usd,tarih:$("b_tar").value,yontem:$("b_yon").value,aciklama:$("b_ack").value.trim()},el,!tl&&"Tutar girin");
+     let netTL=tl, ack=$("b_ack").value.trim(); const yon=$("b_yon").value;
+     if(yon==="Kredi Kartı" && tl>0){
+       const ekstra=$("b_kom")&&$("b_kom").value==="1"; const kom=Math.round(tl*0.035);
+       const cek=ekstra?tl+kom:tl; netTL=ekstra?tl:tl-kom;
+       const note="[Kredi kartı %3,5 komisyon · karttan çekilen ₺"+Math.round(cek).toLocaleString("tr-TR")+" · komisyon ₺"+kom.toLocaleString("tr-TR")+(ekstra?" üzerine eklendi":" içinden düşüldü")+"]";
+       ack = ack ? (ack+" "+note) : note;
+     }
+     const usd=rate>0?Math.round((netTL/rate)*100)/100:0;
+     await submit("bildirim",{tutar:netTL,pb:"₺",kur:rate,usdKarsilik:usd,tarih:$("b_tar").value,yontem:yon,aciklama:ack},el,!tl&&"Tutar girin");
    } else {
      const usd=parseFloat(String($("b_usd_in").value||"").replace(",","."))||0;
      await submit("bildirim",{tutar:usd,pb:"$",tarih:$("b_tar").value,yontem:$("b_yon").value,aciklama:$("b_ack").value.trim()},el,!usd&&"Tutar girin");
