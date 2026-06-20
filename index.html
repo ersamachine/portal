@@ -254,9 +254,9 @@ function buildNotifs(){
  (d.bildirimler||[]).forEach((b,i)=>{const v=money(b.tutar,b.pb==='TL'?'₺':'$');
   if(b.durum==='Onaylandı')out.push({k:'odeme',ic:'check',bg:'#11271A',col:'#2ED573',t:'Ödemeniz onaylandı',s:v+' · Makbuzu görün',time:b.zaman,act:'makbuz',av:i});
   else if(b.durum==='Reddedildi')out.push({k:'odeme',ic:'x',bg:'#2A1414',col:'#FF6B5E',t:'Ödeme bildiriminiz onaylanmadı',s:v,time:b.zaman});});
- (d.sifreler||[]).forEach(s=>{if(s.durum==='Verildi')out.push({k:'sifre',ic:'lock',bg:'#192639',col:'#5B8DEF',t:'Makine şifreniz verildi',s:(s.makine||'')+' · Makine sekmesinde görün',time:s.zaman});});
- (d.teklifler||[]).forEach(t=>{if((t.durum||'').toLowerCase().indexOf('yan')===0)out.push({k:'teklif',ic:'tag',bg:'#2C2410',col:'#F5A623',t:'Teklifiniz yanıtlandı',s:(t.urun||'Teklif'),time:t.zaman});});
- (d.servisler||[]).forEach(s=>{const dd=(s.durum||'').toLowerCase();if(dd.indexOf('işlem')===0||dd.indexOf('islem')===0)out.push({k:'servis',ic:'wrench',bg:'#2A1414',col:'#FF6B5E',t:'Servis talebiniz işleme alındı',s:(s.makine||''),time:s.zaman});else if(dd.indexOf('çöz')===0||dd.indexOf('coz')===0)out.push({k:'servis',ic:'check',bg:'#11271A',col:'#2ED573',t:'Servis talebiniz çözüldü',s:(s.makine||''),time:s.zaman});});
+ (d.sifreler||[]).forEach(s=>{if(s.durum==='Verildi')out.push({k:'sifre',ic:'lock',bg:'#192639',col:'#5B8DEF',t:'Makine şifreniz verildi',s:(stripFoto(s.makine)||'')+' · Makine sekmesinde görün',time:s.zaman});});
+ (d.teklifler||[]).forEach(t=>{if((t.durum||'').toLowerCase().indexOf('yan')===0)out.push({k:'teklif',ic:'tag',bg:'#2C2410',col:'#F5A623',t:'Teklifiniz yanıtlandı',s:(stripFoto(t.urun)||'Teklif'),time:t.zaman});});
+ (d.servisler||[]).forEach(s=>{const dd=(s.durum||'').toLowerCase();if(dd.indexOf('işlem')===0||dd.indexOf('islem')===0)out.push({k:'servis',ic:'wrench',bg:'#2A1414',col:'#FF6B5E',t:'Servis talebiniz işleme alındı',s:stripFoto(s.makine||''),time:s.zaman});else if(dd.indexOf('çöz')===0||dd.indexOf('coz')===0)out.push({k:'servis',ic:'check',bg:'#11271A',col:'#2ED573',t:'Servis talebiniz çözüldü',s:stripFoto(s.makine||''),time:s.zaman});});
  out.forEach(n=>n.id=n.k+'|'+n.t+'|'+(n.time||''));
  out.sort((a,b)=>String(b.time||'').localeCompare(String(a.time||'')));
  const r=getRead();out.forEach(n=>n.read=!!r[n.id]);
