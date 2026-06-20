@@ -529,7 +529,6 @@ function ekstrePdf(tk){
  const doc='<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cari Ekstre · '+esc(musteri)+'</title>'
   +'<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">'
   +'<style>'+CSS+'</style></head><body>'
-  +'<div class="bar"><button onclick="window.print()">⬇ PDF olarak kaydet</button><span>Açılan pencerede “Hedef”i <b>PDF olarak kaydet</b> seçin.</span></div>'
   +'<div class="page">'
     +'<div class="lh"><div class="band"><div class="logo"><span class="wm">ersa machinery</span><span class="est">ESTD 2021</span></div></div><div class="title">CARİ HESAP<br>EKSTRESİ</div><div class="tab"></div></div>'
     +'<div class="accent"></div>'
@@ -545,11 +544,14 @@ function ekstrePdf(tk){
     +'</div>'
     +'<div class="botbar"><div>info@ersamachinery.com</div><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.4 12 4l9 7.4"/><path d="M5.5 9.8V20h13V9.8"/></svg><div>www.ersamachinery.com</div></div>'
   +'</div>'
-  +'<scr'+'ipt>window.onload=function(){setTimeout(function(){try{window.focus();window.print();}catch(_){}}, 500);};</scr'+'ipt>'
+  +'<scr'+'ipt src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></scr'+'ipt>'
+  +'<scr'+'ipt>var FN='+JSON.stringify("Cari-Ekstre-"+String(musteri||"Musteri").replace(/[^\wÀ-ſ -]/g,"").trim()+".pdf")+';'
+    +'function fitp(){var p=document.querySelector(".page");if(!p)return;p.style.zoom=1;var pw=p.offsetWidth,vw=document.documentElement.clientWidth;p.style.zoom=Math.min(1,vw/pw);}'
+    +'window.addEventListener("resize",fitp);window.addEventListener("load",fitp);setTimeout(fitp,250);setTimeout(fitp,1200);'
+    +'function indirPDF(){if(typeof html2pdf==="undefined"){alert("PDF hazırlanıyor, birkaç saniye sonra tekrar deneyin.");return;}var p=document.querySelector(".page");var z=p.style.zoom;p.style.zoom=1;html2pdf().set({margin:0,filename:FN,image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"letter",orientation:"portrait"}}).from(p).save().then(function(){p.style.zoom=z;}).catch(function(){p.style.zoom=z;});}'
+  +'</scr'+'ipt>'
   +'</body></html>';
- const w=window.open("","_blank");
- if(!w){ toast("PDF için açılır pencereye izin verin"); return; }
- w.document.open(); w.document.write(doc); w.document.close();
+ S.pdfDoc=doc; S.pdfAd=musteri; S.sheet="pdfview"; render();
 }
 
 /* ---------- ÖDEMELERİM + MAKBUZ ---------- */
@@ -652,7 +654,18 @@ function odemeBilgiBlok(){
   +'</div></div>';
 }
 function ibanCur(want){var tabs=document.querySelectorAll(".ibtab");if(!tabs.length)return;var hit=null;tabs.forEach(function(x){if(x.getAttribute("data-cur")===want)hit=x;});if(!hit)return;tabs.forEach(function(x){x.classList.remove("on");});hit.classList.add("on");var iv=document.getElementById("ibanval"),cp=document.getElementById("ibancopy"),val=hit.getAttribute("data-iban")||"";if(iv)iv.textContent=val;if(cp)cp.setAttribute("data-v",val);}
+function pdfOverlay(){
+ return '<div style="position:absolute;inset:0;z-index:70;background:#54585e;display:flex;flex-direction:column;">'
+  +'<div style="display:flex;align-items:center;gap:10px;background:#1b1b1b;color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 12px 10px;flex-shrink:0;">'
+   +'<div class="tap" data-act="close" style="width:38px;height:38px;border-radius:11px;background:#2a2a2a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+ic("cl",18,"#fff")+'</div>'
+   +'<div style="flex:1;min-width:0;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Cari Ekstre'+(S.pdfAd?' · '+esc(S.pdfAd):'')+'</div>'
+   +'<button class="btnred" data-act="pdfIndir" style="width:auto;margin:0;padding:10px 15px;font-size:13px;box-shadow:none;">'+ic("dl",15,"#fff")+' İndir</button>'
+  +'</div>'
+  +'<iframe id="pdfframe" srcdoc="'+esc(S.pdfDoc||"")+'" style="flex:1;width:100%;border:none;background:#54585e;display:block;"></iframe>'
+ +'</div>';
+}
 function sheetForm(){
+ if(S.sheet==="pdfview") return pdfOverlay();
  if(S.sheet==="ekstrePdf"){var _tk=(S.ekstreTk!==false);return wrap("Cari Ekstre",'<div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">'+esc((S.data&&S.data.firma)||"")+' — PDF\'e nelerin gireceğini seç.</div>'+'<div class="c tap" data-act="ekstreTkToggle" style="padding:14px;display:flex;align-items:center;gap:12px;"><div style="width:46px;height:27px;border-radius:20px;flex-shrink:0;background:'+(_tk?"#2ED573":"#3a3a3a")+';position:relative;transition:.15s;"><div style="position:absolute;top:3px;left:'+(_tk?"22px":"3px")+';width:21px;height:21px;border-radius:50%;background:#fff;transition:.15s;"></div></div><div style="flex:1;"><div style="font-weight:700;color:#fff;font-size:13.5px;">Açık Taksitler / Ödeme Planı\'nı ekle</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px;">'+(_tk?"Taksit planı PDF\'e eklenecek":"Eklenmeyecek — sadece hesap hareketleri")+'</div></div></div>'+'<button class="btnred" data-act="ekstrePdfYap" style="margin-top:14px;">'+ic("receipt",16,"#fff")+' PDF oluştur</button>');}
  if(S.sheet==="yeniTalep") return wrap("Yeni Talep",
    '<div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">Ne talep etmek istersiniz?</div>'
@@ -814,6 +827,7 @@ $("app").addEventListener("click",async function(e){
  else if(a==="open"){if(v==="teklif"||v==="sifre")window.PHOTOS=[];S.sheet=v;render();}
  else if(a==="chooser"){if(v==="sifre")window.PHOTOS=[];S.sheet=v;render();}
  else if(a==="close"){S.sheet=null;render();}
+ else if(a==="pdfIndir"){var f=document.getElementById("pdfframe");try{if(f&&f.contentWindow&&f.contentWindow.indirPDF){f.contentWindow.indirPDF();}else{toast("PDF hazır değil, biraz bekleyin");}}catch(_){toast("İndirilemedi");}}
  else if(a==="ibansec"){ document.querySelectorAll(".ibtab").forEach(function(x){x.classList.remove("on");}); el.classList.add("on"); var iv=$("ibanval"),cp=$("ibancopy"),val=el.getAttribute("data-iban")||""; if(iv)iv.textContent=val; if(cp)cp.setAttribute("data-v",val); }
  else if(a==="copy"){const txt=el.getAttribute("data-v")||"";const done=()=>toast("Kopyalandı");try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,()=>toast("Kopyalanamadı"));}else{const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);done();}}catch(e){toast("Kopyalanamadı");}}
  else if(a==="successok"){successGo();render();}
