@@ -605,14 +605,14 @@ function makbuzView(i){
  const bil=((S.data&&S.data.bildirimler)||[]); const b=bil[i];
  if(!b) return '<div class="pad stg"><div class="back" data-act="push" data-v="odemelerim">'+ic('cl',18)+' Geri</div><div class="c" style="padding:22px;margin-top:12px;text-align:center;color:var(--muted);">Makbuz bulunamadı.</div></div>';
  if(b.durum!=="Onaylandı") return '<div class="pad stg"><div class="back" data-act="push" data-v="odemelerim">'+ic('cl',18)+' Geri</div><div class="c" style="padding:22px;margin-top:12px;text-align:center;color:var(--muted);">Bu ödeme henüz onaylanmadı.</div></div>';
- const cur=b.pb==='TL'?'₺':'$'; const trh=isoTR(b.tarih)||((b.zaman||'').slice(0,10)); const no=makbuzNo(b,bil.length,i);
+ const cur=(b.pb==='TL'||b.pb==='₺')?'₺':'$'; const trh=isoTR(b.tarih)||((b.zaman||'').slice(0,10)); const no=makbuzNo(b,bil.length,i);
  const firma=(S.data&&S.data.firma)||"";
  const r=(k,v)=>'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:12.5px;"><span style="color:#999;">'+k+'</span><span style="color:#222;font-weight:600;">'+esc(v)+'</span></div>';
  return '<div class="pad stg"><div class="back" data-act="push" data-v="odemelerim">'+ic('cl',18)+' Geri</div>'
  +'<div id="makbuzPrint" style="margin-top:12px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5);position:relative;">'
   +'<div style="background:#161616;padding:18px;text-align:center;"><img src="logo-white.png" alt="ERSA" style="height:24px;width:auto;display:inline-block;"><div style="color:#9a9a9a;font-size:10px;margin-top:6px;letter-spacing:2px;">ÖDEME MAKBUZU</div></div>'
   +'<div style="position:absolute;top:66px;right:8px;pointer-events:none;">'+kaseSVG(120,trh)+'</div>'
-  +'<div style="padding:22px 20px 8px;"><div style="font-size:11px;color:#999;">TUTAR</div><div style="font-size:30px;font-weight:800;color:#161616;font-variant-numeric:tabular-nums;">'+money(b.tutar,cur)+'</div></div>'
+  +'<div style="padding:22px 20px 8px;"><div style="font-size:11px;color:#999;">TUTAR</div><div style="font-size:30px;font-weight:800;color:#161616;font-variant-numeric:tabular-nums;">'+money(b.tutar,cur)+'</div>'+((cur==='₺'&&b.usdKarsilik>0)?'<div style="font-size:12px;color:#1F9D52;font-weight:700;margin-top:3px;">≈ $'+Math.round(b.usdKarsilik).toLocaleString("tr-TR")+' bakiyenize işlendi</div>':'')+'</div>'
   +'<div style="padding:4px 20px;">'+r("Müşteri",firma)+r("Ödeme Tarihi",trh)+r("Yöntem",b.yontem||"-")+r("Makbuz No",no)+'<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:12.5px;"><span style="color:#999;">Durum</span><span style="color:#1F9D52;font-weight:700;">Onaylandı ✓</span></div></div>'
   +'<div style="height:14px;position:relative;"><div style="position:absolute;left:0;right:0;top:50%;border-top:2px dashed #e4e4e4;"></div></div>'
   +'<div style="padding:12px 20px 20px;"><div style="font-size:11px;color:#999;text-align:center;line-height:1.5;">Bu makbuz ödemenizin tarafımıza ulaştığını teyit eder.</div></div>'
@@ -689,9 +689,14 @@ function gecikmeFaizi(){
  ((S.data&&S.data.taksitler)||[]).forEach(function(t){
    if(String(t.durum)==='Ödendi')return;
    var kalan=(t.kalan!=null?t.kalan:t.tutar)||0; if(kalan<=0)return;
-   var d=new Date(t.vade); if(isNaN(d.getTime()))return; d.setHours(0,0,0,0);
-   var gun=Math.round((t0-d)/86400000); if(gun<=0)return;
-   var faiz=Math.round(kalan*RATE*(gun/30));
+   var vd=new Date(t.vade); if(isNaN(vd.getTime()))return; vd.setHours(0,0,0,0);
+   var gun=Math.round((t0-vd)/86400000); if(gun<=0)return;
+   var odenen=t.odenen||0; var tutar=t.tutar||kalan; var faiz;
+   var od=t.odemeTarihi?new Date(t.odemeTarihi):null; if(od&&isNaN(od.getTime()))od=null; if(od)od.setHours(0,0,0,0);
+   if(odenen>0 && od && od>vd){ /* kısmi ödeme: öncesi tam tutar, sonrası kalan */
+     var odc=(od>t0)?t0:od; var g1=Math.round((odc-vd)/86400000); if(g1<0)g1=0; var g2=Math.round((t0-odc)/86400000); if(g2<0)g2=0;
+     faiz=Math.round(tutar*RATE*(g1/30) + kalan*RATE*(g2/30));
+   } else { faiz=Math.round(kalan*RATE*(gun/30)); }
    out.kalemler.push({taksit:t.taksit||'',gun:gun,kalan:kalan,faiz:faiz}); out.anapara+=kalan; out.faiz+=faiz;
  });
  out.onerilen=out.anapara+out.faiz; return out;
@@ -720,10 +725,10 @@ function sheetForm(){
  if(S.sheet==="bildir"){
    const sn=sonrakiTaksit();
    const k=kurSatis(); const rate=k?k.satis:0; const hasKur=rate>0;
-   const insUSD=sn?(((sn.t.kalan!=null?sn.t.kalan:sn.t.tutar))||0):0;
+   const gf=gecikmeFaizi();
+   const insUSD=gf.kalemler.length?gf.onerilen:(sn?(((sn.t.kalan!=null?sn.t.kalan:sn.t.tutar))||0):0);
    const tlPre=(hasKur&&insUSD>0)?Math.round(insUSD*rate):"";
    const usdPre=insUSD>0?Math.round(insUSD):"";
-   const gf=gecikmeFaizi();
    const faizKart=gf.kalemler.length?(
      '<div class="c" style="padding:0;overflow:hidden;border:1px solid #4a2c12;margin-bottom:13px;">'
      +'<div style="display:flex;align-items:center;gap:11px;padding:13px 14px;background:#2A1810;"><div style="width:34px;height:34px;border-radius:11px;background:#3a2410;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+ic('alert',17,'#F5A623')+'</div><div style="flex:1;"><div style="font-weight:700;color:#fff;font-size:13px;">Gecikme Farkı (aylık %5)</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">'+gf.kalemler.length+' vadesi geçmiş taksit · gün sayısına göre</div></div></div>'
@@ -732,8 +737,8 @@ function sheetForm(){
      +'<div style="height:1px;background:#2a2a2a;margin:6px 0;"></div>'
      +'<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12.5px;"><span style="color:#ddd;">Anapara (vadesi geçen)</span><span style="color:#fff;font-weight:700;" class="bignum">$'+Math.round(gf.anapara).toLocaleString("tr-TR")+'</span></div>'
      +'<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12.5px;"><span style="color:#F5A623;">Gecikme farkı (%5)</span><span style="color:#F5A623;font-weight:800;" class="bignum">+$'+Math.round(gf.faiz).toLocaleString("tr-TR")+'</span></div>'
-     +'<div style="display:flex;justify-content:space-between;padding:6px 0 2px;font-size:13.5px;"><span style="color:#fff;font-weight:800;">Önerilen (fark dahil)</span><span style="color:#2ED573;font-weight:800;font-size:15px;" class="bignum">$'+Math.round(gf.onerilen).toLocaleString("tr-TR")+'</span></div>'
-     +'<button type="button" class="btng" style="margin-top:9px;border-color:#4a2c12;" onclick="faizYaz('+gf.onerilen+')">'+ic('check',15,'#F5A623')+' Bu tutarı yaz ($'+Math.round(gf.onerilen).toLocaleString("tr-TR")+')</button>'
+     +'<div style="display:flex;justify-content:space-between;padding:6px 0 2px;font-size:13.5px;"><span style="color:#fff;font-weight:800;">Ödenecek (fark dahil)</span><span style="color:#2ED573;font-weight:800;font-size:15px;" class="bignum">$'+Math.round(gf.onerilen).toLocaleString("tr-TR")+'</span></div>'
+     +'<div style="font-size:11px;color:var(--muted);margin-top:7px;">Gecikme farkı ödenecek tutara eklenmiştir.</div>'
      +'</div></div>'
    ):'';
    const ipucu=sn?('<div style="font-size:11px;color:var(--gold);margin:9px 0 0;font-weight:600;">'+ic((sn._du==="Gecikti"?'alert':'cal'),12,(sn._du==="Gecikti"?'#FF5A5A':'#F5C04A'))+' Taksit '+esc(sn.t.taksit||"")+' · vade '+(fmtDate(sn._d)||esc(sn.t.vade||""))+(sn._du==="Gecikti"?' (gecikmiş)':'')+'</div>'):'';
