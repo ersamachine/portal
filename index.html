@@ -157,6 +157,21 @@ body{padding:0;background:#111111;align-items:stretch;justify-content:stretch;he
 .sbar{display:none;}
 }
 @media print{ body{background:#fff!important;} body *{visibility:hidden!important;} #makbuzPrint, #makbuzPrint *{visibility:visible!important;} #makbuzPrint{position:absolute!important;left:0;top:0;width:100%;box-shadow:none!important;} .navwrap,.back,.btnred{display:none!important;} }
+.lztabs{display:flex;gap:8px;margin-top:12px;}
+.lztab{flex:1;padding:11px;border-radius:12px;border:1px solid var(--line);background:#1b1b21;color:#cfcfd6;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;}
+.lztab.on{background:var(--red);color:#fff;border-color:var(--red);}
+.lzvrow{display:flex;gap:7px;margin-top:9px;}
+.lzv{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:12px;border:1px solid var(--line);background:#1b1b21;cursor:pointer;font-family:inherit;}
+.lzv.on{border-color:var(--gold);background:#241d0a;}
+.lzv span{font-size:11px;color:var(--muted);font-weight:600;}
+.lzv.on span{color:var(--gold);}
+.lzv b{font-size:13px;color:#fff;}
+.lzok{display:flex;flex-direction:column;align-items:center;gap:7px;margin:2px 0 12px;animation:fd .3s ease;}
+.lzokc{width:58px;height:58px;}
+.lzokc circle{fill:none;stroke:#2ED573;stroke-width:3;stroke-dasharray:151;stroke-dashoffset:151;animation:lzdash .5s ease-out forwards;}
+.lzokc path{fill:none;stroke:#2ED573;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:40;stroke-dashoffset:40;animation:lzdash .35s .42s ease-out forwards;}
+.lzok .lzokt{font-size:13px;font-weight:700;color:#2ED573;animation:su .4s .3s both;}
+@keyframes lzdash{to{stroke-dashoffset:0;}}
 </style></head>
 <body>
 <div class="phone"><div class="inner" id="app">
@@ -742,14 +757,16 @@ async function lzParse(file){
   const by=await lzMeasure(buf);
   let t={kesim:0,bigleme:0,perforaj:0};
   for(const k in by){ if(by[k]<=1)continue; const c=lzGuess.apply(null,k.split(',').map(Number)); if(t[c]!==undefined)t[c]+=by[k]; }
-  const a=(S.lazer&&S.lazer.ayar)||{kesim:0,bigleme:0,perforaj:0,pb:'₺',uretim:''};
+  const a=(S.lazer&&S.lazer.ayar)||{nakit:0,g30:0,g60:0,g90:0,pb:'₺',uretim:''};
   const kesimM=t.kesim/1000,biglemeM=t.bigleme/1000,perfM=t.perforaj/1000,toplamM=kesimM+biglemeM+perfM;
-  const fiyat=Math.round((kesimM*(a.kesim||0)+biglemeM*(a.bigleme||0)+perfM*(a.perforaj||0))*100)/100;
-  return {dosya:file.name,kesim:kesimM,bigleme:biglemeM,perforaj:perfM,toplam:toplamM,fiyat:fiyat,pb:a.pb||'₺',uretim:a.uretim||'',hasVector:Object.keys(by).length>0};
+  const oran={nakit:a.nakit||0,'30':a.g30||0,'60':a.g60||0,'90':a.g90||0};
+  const rnd=x=>Math.round(toplamM*x*100)/100;
+  const fiyatlar={nakit:rnd(oran.nakit),'30':rnd(oran['30']),'60':rnd(oran['60']),'90':rnd(oran['90'])};
+  return {dosya:file.name,kesim:kesimM,bigleme:biglemeM,perforaj:perfM,toplam:toplamM,oran:oran,fiyatlar:fiyatlar,pb:a.pb||'₺',uretim:a.uretim||'',hasVector:Object.keys(by).length>0};
 }
 window.lzPick=function(e){ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f)return; S.lzBusy=true;render();
-  lzParse(f).then(function(res){ S.lzBusy=false; S.lzResult=res.hasVector?res:{err:true,dosya:f.name}; render();
-    if(res.hasVector&&window.LAZER_API_URL){ try{ lazerApi({action:"lazerHesapLog",data:{dosya:res.dosya,kesim:res.kesim,bigleme:res.bigleme,toplam:res.toplam,fiyat:res.fiyat}}); }catch(_){ } }
+  lzParse(f).then(function(res){ S.lzBusy=false; S.lzMode="nakit"; S.lzVade="nakit"; S.lzResult=res.hasVector?res:{err:true,dosya:f.name}; render();
+    if(res.hasVector&&window.LAZER_API_URL){ try{ lazerApi({action:"lazerHesapLog",data:{dosya:res.dosya,kesim:res.kesim,bigleme:res.bigleme,toplam:res.toplam,fiyat:res.fiyatlar?res.fiyatlar.nakit:0}}); }catch(_){ } }
   }).catch(function(err){ S.lzBusy=false; S.lzResult={err:true,dosya:f.name}; render(); });
 };
 function lzDrop(){ return '<label for="lzfile" class="c tap" style="display:block;padding:30px 16px;text-align:center;border:2px dashed var(--line);cursor:pointer;"><div style="font-size:32px;">📐</div><div style="font-weight:700;margin-top:8px;color:#fff;">Kesim kalıbı PDF\'ini seçin</div><div style="font-size:11.5px;color:var(--muted);margin-top:4px;">Esko / ArtiosCAD vektör çizimi · anında fiyat</div></label><input id="lzfile" type="file" accept="application/pdf" style="display:none;" onchange="lzPick(event)">'; }
@@ -758,15 +775,22 @@ function lazerView(){
   const r=S.lzResult; let top;
   if(S.lzBusy){ top='<div class="c" style="padding:28px;text-align:center;color:var(--muted);">'+ic('refresh',26,'#888')+'<div style="margin-top:8px;">Çözümleniyor…</div></div>'; }
   else if(r&&r.err){ top='<div class="c" style="padding:16px;border:1px solid #5a2424;background:#251313;"><div style="color:#ff8a8a;font-size:13px;font-weight:700;">Vektör çizim bulunamadı</div><div style="color:var(--muted);font-size:12px;margin-top:5px;">'+esc(r.dosya||"")+' taranmış/görüntü olabilir. Lütfen Esko / ArtiosCAD vektör PDF yükleyin.</div></div><div style="margin-top:11px;">'+lzDrop()+'</div>'; }
-  else if(r){ const noP=!(r.fiyat>0);
-    top='<div class="c" style="padding:18px;border:1px solid var(--gold);background:linear-gradient(135deg,#2a2208,#1a1a1a);">'
-      +'<div style="font-size:9px;letter-spacing:1.2px;font-weight:800;color:var(--gold);">SİZE ÖZEL FİYAT</div>'
-      +'<div style="font-size:30px;font-weight:800;color:#fff;margin-top:6px;">'+(noP?'—':money(r.fiyat,r.pb))+'</div>'
-      +(noP?'<div style="font-size:11.5px;color:#ffd98a;margin-top:4px;">Fiyat hazır değil — lütfen bizimle iletişime geçin.</div>':'<div style="margin-top:9px;"><span class="chip chip-r" style="background:rgba(245,166,35,.18);color:var(--gold);">'+ic('clock',11,'#F5A623')+' Üretim süresi: '+esc(r.uretim||'—')+'</span></div>')
+  else if(r){
+    const fy=r.fiyatlar||{}; const orn=r.oran||{}; const vade=S.lzVade||"nakit"; const mode=S.lzMode||"nakit";
+    const fiyat=fy[vade]||0; const oran=orn[vade]||0; const noP=!(fiyat>0);
+    const okAnim='<div class="lzok"><svg class="lzokc" viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M14 27l8 8 16-17"/></svg><div class="lzokt">Hesaplamanız başarıyla yapıldı</div></div>';
+    const vchip=function(v,lbl){ return '<button class="lzv'+(vade===v?' on':'')+'" data-act="lazerVade" data-v="'+v+'"><span>'+lbl+'</span><b>'+(fy[v]>0?money(fy[v],r.pb):'—')+'</b></button>'; };
+    top=okAnim
+      +'<div class="c" style="padding:18px;border:1px solid var(--gold);background:linear-gradient(135deg,#2a2208,#1a1a1a);">'
+      +'<div style="font-size:9px;letter-spacing:1.2px;font-weight:800;color:var(--gold);">SİZE ÖZEL FİYAT'+(vade==="nakit"?" · NAKİT":(" · "+vade+" GÜN VADELİ"))+'</div>'
+      +'<div style="font-size:30px;font-weight:800;color:#fff;margin-top:6px;">'+(noP?'—':money(fiyat,r.pb))+'</div>'
+      +'<div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Toplam bıçak <b style="color:#fff;">'+(r.toplam||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' m</b>'+(oran>0?(' · metresi <b style="color:#fff;">'+money(oran,r.pb)+'</b>'):'')+'</div>'
+      +(noP?'<div style="font-size:11.5px;color:#ffd98a;margin-top:6px;">Fiyat hazır değil — lütfen bizimle iletişime geçin.</div>':'<div style="margin-top:9px;"><span class="chip chip-r" style="background:rgba(245,166,35,.18);color:var(--gold);">'+ic('clock',11,'#F5A623')+' Üretim süresi: '+esc(r.uretim||'—')+'</span></div>')
       +'</div>'
-      +'<div class="c" style="padding:13px 15px;margin-top:11px;">'+lzMetr('#e53935','Kesim',r.kesim)+lzMetr('#7fd800','Bigleme',r.bigleme)+(r.perforaj>0?lzMetr('#5B8DEF','Perforaj',r.perforaj):'')+lzMetr('','Toplam bıçak',r.toplam,true)+'</div>'
-      +'<div style="font-size:10.5px;color:var(--muted2);text-align:center;margin-top:7px;">'+esc(r.dosya||"")+'</div>'
-      +(noP?'':'<button class="btnred" style="margin-top:12px;" data-act="lazerSiparisVer">'+ic('check',16,'#fff')+' Sipariş Ver</button>')
+      +'<div class="lztabs"><button class="lztab'+(mode==="nakit"?' on':'')+'" data-act="lazerMod" data-v="nakit">Nakit</button><button class="lztab'+(mode==="vadeli"?' on':'')+'" data-act="lazerMod" data-v="vadeli">Vadeli</button></div>'
+      +(mode==="vadeli"?('<div class="lzvrow">'+vchip("30","30 Gün")+vchip("60","60 Gün")+vchip("90","90 Gün")+'</div>'):'')
+      +'<div style="font-size:10.5px;color:var(--muted2);text-align:center;margin-top:9px;">'+esc(r.dosya||"")+'</div>'
+      +(noP?'':'<button class="btnred" style="margin-top:12px;" data-act="lazerSiparisVer">'+ic('check',16,'#fff')+' Sipariş Ver'+(vade==="nakit"?" (Nakit)":(" ("+vade+" Gün)"))+'</button>')
       +'<button class="btng" style="margin-top:9px;" data-act="lazerYeni">'+ic('refresh',15,'#bbb')+' Yeni hesaplama</button>';
   }
   else top=lzDrop();
@@ -794,6 +818,7 @@ function lazerSipDetayView(id){
   return '<div class="pad stg"><div class="back" data-act="push" data-v="lazerSiparislerim">'+ic('cl',18)+' Bıçak Siparişlerim</div>'
    +'<div style="font-size:12px;color:var(--muted);margin-top:8px;">'+esc(s.dosya||"")+' · '+(s.toplam||0).toLocaleString("tr-TR",{maximumFractionDigits:2})+' m · '+esc(s.id)+'</div>'
    +'<div style="font-size:23px;font-weight:800;color:#fff;margin:4px 0 5px;">'+money(s.fiyat,s.pb)+' <span class="chip '+(s.durum==="Teslim Edildi"?'chip-g':'chip-r')+'" style="font-size:11px;margin-left:5px;">'+esc(s.durum)+'</span></div>'
+   +(s.vade?'<div style="font-size:11.5px;color:#cfcfd6;">'+esc(s.vade)+(s.vadeTarihi?' · vade: '+esc(s.vadeTarihi):'')+'</div>':'')
    +(s.uretim?'<div style="font-size:11.5px;color:var(--gold);">Tahmini üretim süresi: '+esc(s.uretim)+'</div>':'')
    +'<div class="c" style="padding:8px 16px;margin-top:15px;">'+steps+'</div>'
    +'<div class="c" style="padding:13px 15px;margin-top:11px;display:flex;justify-content:space-between;align-items:center;gap:8px;"><span style="font-size:11.5px;color:var(--muted);">Kargo takip no</span><b style="color:#fff;font-family:monospace;text-align:right;">'+(s.takip?esc((s.kargo?s.kargo+" · ":"")+s.takip):'— henüz yok —')+'</b></div>'
@@ -1067,7 +1092,9 @@ $("app").addEventListener("click",async function(e){
  else if(a==="push"){if(v==="lazerCizim")window.PHOTOS=[];if(v&&v.indexOf("lazer")===0&&!S.lazer)loadLazer();S.pushed={t:v};S.sheet=null;render();}
  else if(a==="lazerSipDetay"){S.pushed={t:"lazerSipDetay",id:el.getAttribute("data-id")};S.sheet=null;render();}
  else if(a==="lazerYeni"){S.lzResult=null;render();}
- else if(a==="lazerSiparisVer"){const r=S.lzResult;if(!r||!(r.fiyat>0)){toast("Fiyat oluşmadı");return;}if(!window.LAZER_API_URL){toast("ERSA Lazer adresi tanımlı değil");return;}if(!confirm("Bu bıçak için sipariş vermek istiyor musunuz?\n\nFiyat: "+money(r.fiyat,r.pb)+"\nÜretim süresi: "+(r.uretim||"-")))return;el.textContent="Gönderiliyor…";try{const j=await lazerApi({action:"lazerSiparis",data:{dosya:r.dosya,kesim:r.kesim,bigleme:r.bigleme,perforaj:r.perforaj,toplam:r.toplam}});if(j&&j.ok){toast("Siparişiniz alındı ✓");S.lzResult=null;S.pushed={t:"lazerSipDetay",id:j.id};await loadLazer();}else{toast((j&&j.error)||"Sipariş verilemedi");render();}}catch(e){toast("Bağlantı hatası");render();}}
+ else if(a==="lazerMod"){if(v==="nakit"){S.lzMode="nakit";S.lzVade="nakit";}else{S.lzMode="vadeli";if(["30","60","90"].indexOf(S.lzVade)<0)S.lzVade="30";}render();}
+ else if(a==="lazerVade"){S.lzVade=v;S.lzMode="vadeli";render();}
+ else if(a==="lazerSiparisVer"){const r=S.lzResult;const vade=S.lzVade||"nakit";const fy=(r&&r.fiyatlar&&r.fiyatlar[vade])||0;if(!r||!(fy>0)){toast("Fiyat oluşmadı");return;}if(!window.LAZER_API_URL){toast("ERSA Lazer adresi tanımlı değil");return;}if(!confirm("Bu bıçak için sipariş vermek istiyor musunuz?\n\n"+(vade==="nakit"?"Nakit":(vade+" Gün Vadeli"))+" fiyat: "+money(fy,r.pb)+"\nÜretim süresi: "+(r.uretim||"-")))return;el.textContent="Gönderiliyor…";try{const j=await lazerApi({action:"lazerSiparis",data:{dosya:r.dosya,kesim:r.kesim,bigleme:r.bigleme,perforaj:r.perforaj,toplam:r.toplam,vade:vade}});if(j&&j.ok){toast("Siparişiniz alındı ✓");S.lzResult=null;S.pushed={t:"lazerSipDetay",id:j.id};await loadLazer();}else{toast((j&&j.error)||"Sipariş verilemedi");render();}}catch(e){toast("Bağlantı hatası");render();}}
  else if(a==="lazerCizimGonder"){const urun=($("lz_urun")||{}).value||"";const tel=($("lz_tel")||{}).value||"";const acik=($("lz_acik")||{}).value||"";if(!urun.trim()&&!acik.trim()){toast("Ürün veya açıklama yazın");return;}if(!window.LAZER_API_URL){toast("ERSA Lazer adresi tanımlı değil");return;}el.textContent="Gönderiliyor…";try{const j=await lazerApi({action:"lazerCizim",data:{urun:urun,telefon:tel,aciklama:acik,photos:(window.PHOTOS||[]).slice()}});if(j&&j.ok){window.PHOTOS=[];toast("Talebiniz alındı, sizi arayacağız ✓");S.pushed={t:"lazer"};await loadLazer();}else{toast((j&&j.error)||"Gönderilemedi");render();}}catch(e){toast("Bağlantı hatası");render();}}
  else if(a==="back"){S.pushed=null;render();}
  else if(a==="talF"){S.talF=v;render();}
