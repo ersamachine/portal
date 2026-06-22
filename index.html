@@ -316,12 +316,9 @@ function homeView(){
   +'</div>'
   +'<div class="divr"></div><div class="tap" data-act="push" data-v="cari" style="font-size:11.5px;color:var(--muted);font-weight:600;">Ekstreyi gör ›</div>'
  +'</div>'
+ +(((d.aiTeklifler||[]).length)?(function(){var q=d.aiTeklifler[0]||{};var on=(q.durum==="Onaylandı"||q.durum==="Sözleşme");return '<div class="c tap" data-act="aiTeklifAc" data-ref="'+esc(q.ref||"")+'" style="margin-top:16px;padding:16px;border:1px solid var(--gold);background:linear-gradient(135deg,#2a2208,#1a1a1a);"><div style="display:flex;align-items:center;gap:7px;font-size:9px;letter-spacing:1.2px;font-weight:800;color:var(--gold);">'+ic('star',13,'#F5A623')+' SİZE ÖZEL FİYAT TEKLİFİ'+(d.aiTeklifler.length>1?(" ("+d.aiTeklifler.length+")"):"")+'</div><div style="font-weight:800;font-size:15px;color:#fff;margin-top:8px;line-height:1.25;">'+esc(q.makine||"Fiyat teklifi")+'</div><div style="font-size:18px;font-weight:800;color:var(--gold);margin-top:5px;">'+money(q.satis,q.pb)+'</div><div style="margin-top:11px;background:var(--gold);color:#1a1a1a;border-radius:10px;padding:11px;text-align:center;font-weight:800;font-size:13px;">'+(on?"✓ Onayladınız — Görüntüle":"Teklifi Gör / Onayla →")+'</div></div>';})():'')
+ +'<button class="tap" data-act="open" data-v="bildir" style="width:100%;margin-top:14px;background:var(--red);color:#fff;border:none;border-radius:14px;padding:15px;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;">'+ic('wallet',18,'#fff')+' Ödeme Bildir</button>'
  +(function(){const o=siparisAktif();if(!o)return'';const cur=asamaIx(o.durum);return '<div class="c tap" data-act="push" data-v="siparisler" style="margin-top:14px;padding:16px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);">AKTİF SİPARİŞ</div><span class="chip chip-r">'+ic('truck',10)+' '+esc(o.durum)+'</span></div><div style="font-weight:700;font-size:14.5px;color:#fff;margin-top:8px;">'+esc(o.makine||'Sipariş')+'</div><div class="prog"><div style="width:'+siparisPct(cur)+'%;"></div></div><div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--muted);"><span>'+(cur+1)+'/'+SIPARIS_ASAMA.length+' aşama</span><span>Takip et ›</span></div></div>';})()
- +'<div class="sec">Hızlı İşlemler</div>'
- +'<div class="qgrid">'+tiles.map((t,i)=>'<div class="qtile'+(t[4]==="bildir"?' pay':'')+'" data-act="'+t[3]+'" data-v="'+t[4]+'" style="animation-delay:'+(0.05+i*0.06).toFixed(2)+'s;"><div class="qwrap" style="background:'+tileGrad(t[2])+';border-color:'+tileBrd(t[2])+';animation-delay:0s,'+(i*0.3).toFixed(1)+'s;">'+ic(t[0],23,t[2])+'</div><span>'+t[1]+'</span></div>').join('')+'</div>'
- +(((d.aiTeklifler||[]).length)?'<div class="c tap" data-act="tab" data-v="fiyatteklif" style="margin-top:16px;padding:15px;display:flex;align-items:center;gap:12px;border:1px solid var(--gold);background:linear-gradient(135deg,#241d0b,#1a1a1a);"><div class="circ" style="background:#3a2e10;">'+ic('tag',18,'#F5A623')+'</div><div style="flex:1;min-width:0;"><div class="ct" style="color:#fff;">Size özel fiyat teklifi ('+(d.aiTeklifler||[]).length+')</div><div class="cs">Hazırladığımız teklifi görüntüleyin</div></div>'+ic('cr',18,'#F5A623')+'</div>':'')
- +(acikTeklif?'<div class="c tap" data-act="tab" data-v="teklifler" style="margin-top:16px;padding:14px;display:flex;align-items:center;gap:11px;"><div class="circ" style="background:var(--redsoft);">'+ic('file',17,'#EDEDED')+'</div><div style="flex:1;"><div class="ct">'+acikTeklif+' fiyat teklifi</div><div class="cs">Durumlarını görüntüleyin</div></div>'+ic('cr',18,'#777')+'</div>':'')
- +(ek.length?'<div class="sec">Son Hareketler</div><div class="c" style="padding:4px 14px;">'+ek.map((h,i)=>{const isF=(h.borc||0)>0;return '<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;'+(i<ek.length-1?'border-bottom:1px solid var(--line);':'')+'"><div style="min-width:0;"><div style="font-size:12.5px;font-weight:600;color:#EDEDED;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">'+esc(h.tip)+'</div><div style="font-size:10.5px;color:var(--muted);margin-top:1px;">'+fmtD(h.tarih)+'</div></div><div class="bignum" style="font-weight:700;font-size:13px;color:'+(isF?'#FF6B5E':'#2ED573')+';">'+(isF?'+':'−')+money(isF?h.borc:h.alacak)+'</div></div>';}).join('')+'</div>':'')
  +'</div>';
 }
 
@@ -361,12 +358,34 @@ function talepItems(){
  return items;
 }
 function tekliflerView(){ return taleplerimView(); }   // eski tab adı güvenliği
+function teklifDurumBadge(durum){
+ var m={"Onaylandı":["Onayladınız","rgba(46,213,115,.18)","#2ED573"],"Sözleşme":["Sözleşme hazır","rgba(46,213,115,.18)","#2ED573"],"Soru Soruldu":["Soru iletildi","rgba(91,141,239,.18)","#5B8DEF"]};
+ var x=m[durum]||["Teklif iletildi","rgba(245,166,35,.18)","#F5A623"];
+ return '<span style="font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;background:'+x[1]+';color:'+x[2]+';">'+x[0]+'</span>';
+}
 function fiyatTeklifView(){
  const d=S.data||{}, list=(d.aiTeklifler||[]);
- const head='<div class="pad stg"><div class="h1" style="margin-top:4px;">Fiyat Tekliflerim</div><div style="font-size:12px;color:var(--muted);margin:2px 0 14px;">ERSA tarafından size özel hazırlanan fiyat teklifleri.</div>';
+ const head='<div class="pad stg"><div class="h1" style="margin-top:4px;">Tekliflerim</div><div style="font-size:12px;color:var(--muted);margin:2px 0 14px;">Size özel hazırladığımız fiyat teklifleri.</div>';
  if(!list.length) return head+'<div class="empty" style="padding-top:60px;">'+ic('tag',30,'#5A5A5A')+'<div style="margin-top:10px;">Henüz size iletilen bir teklif yok.</div></div></div>';
- const rows=list.map(t=>'<div class="c" style="padding:15px;margin-bottom:11px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;"><div style="min-width:0;"><div style="font-weight:700;font-size:14.5px;color:#fff;">'+esc(t.makine||"Fiyat teklifi")+'</div><div style="font-size:11px;color:var(--muted);margin-top:3px;">'+fmtD(t.tarih)+'</div></div><div class="bignum" style="font-weight:800;font-size:16px;color:var(--gold);flex-shrink:0;">'+money(t.satis,t.pb)+'</div></div>'+(t.pdf?'<button class="btnred" data-act="aiPdfAc" data-url="'+esc(t.pdf)+'" data-ad="'+esc(t.makine||"Teklif")+'" style="margin-top:12px;">'+ic("file",15,"#fff")+' Teklifi Gör (PDF)</button>':'<div style="font-size:11px;color:var(--muted);margin-top:10px;">PDF hazırlanıyor…</div>')+'</div>').join('');
+ const rows=list.map(function(t){var nm=(t.mesajlar||[]).filter(function(x){return x.kim==="Müşteri";}).length;
+   return '<div class="c tap" data-act="aiTeklifAc" data-ref="'+esc(t.ref||"")+'" style="padding:15px;margin-bottom:11px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;"><div style="min-width:0;"><div style="font-weight:700;font-size:14.5px;color:#fff;">'+esc(t.makine||"Fiyat teklifi")+'</div><div style="font-size:11px;color:var(--muted);margin-top:3px;">'+fmtD(t.tarih)+'</div></div><div class="bignum" style="font-weight:800;font-size:16px;color:var(--gold);flex-shrink:0;">'+money(t.satis,t.pb)+'</div></div><div style="display:flex;align-items:center;gap:8px;margin-top:11px;">'+teklifDurumBadge(t.durum)+(nm?'<span style="font-size:10.5px;color:var(--muted);">💬 '+nm+'</span>':'')+'<span style="margin-left:auto;">'+ic("cr",16,"#777")+'</span></div></div>';}).join('');
  return head+rows+'</div>';
+}
+function aiTeklifDetay(ref){
+ const d=S.data||{}; const t=(d.aiTeklifler||[]).find(function(x){return x.ref===ref;})||{};
+ const onayli=(t.durum==="Onaylandı"||t.durum==="Sözleşme"); const msgs=(t.mesajlar||[]);
+ const thread=msgs.length?msgs.map(function(m){var me=(m.kim==="Müşteri");return '<div style="display:flex;'+(me?'justify-content:flex-end;':'')+'margin-bottom:8px;"><div style="max-width:82%;border-radius:12px;padding:9px 12px;font-size:12.5px;line-height:1.5;background:'+(me?"var(--red)":"var(--soft)")+';"><div style="font-size:8.5px;color:'+(me?"#f0c0c0":"var(--muted)")+';margin-bottom:2px;">'+(me?"Siz":"ERSA")+' · '+esc(m.zaman||"")+'</div>'+esc(m.mesaj)+'</div></div>';}).join(''):'<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px;">Henüz mesaj yok. Teklif hakkında soru sorabilir veya değişiklik isteyebilirsiniz.</div>';
+ return '<div class="pad stg">'
+  +'<div class="tap" data-act="tab" data-v="fiyatteklif" style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#fff;margin-top:6px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Tekliflerim</div>'
+  +'<div style="font-weight:800;font-size:17px;color:#fff;margin-top:12px;line-height:1.25;">'+esc(t.makine||"Fiyat teklifi")+'</div>'
+  +'<div style="margin-top:8px;">'+teklifDurumBadge(t.durum)+'</div>'
+  +(t.pdf?'<button class="btnred" data-act="aiPdfAc" data-url="'+esc(t.pdf)+'" data-ad="'+esc(t.makine||"Teklif")+'" style="margin-top:13px;">'+ic("file",15,"#fff")+' Teklif PDF\'ini Gör</button>':'')
+  +'<div class="c" style="margin-top:13px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:9px;font-weight:800;letter-spacing:1px;color:var(--muted);">FİYAT</div><div class="bignum" style="font-size:20px;color:var(--gold);">'+money(t.satis,t.pb)+'</div></div>'
+  +(onayli?'<div class="c" style="margin-top:13px;padding:15px;text-align:center;border:1px solid var(--green);"><div style="color:var(--green);font-weight:800;font-size:14px;">✓ Teklifi onayladınız</div><div style="font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5;">'+(t.durum==="Sözleşme"?"Satış sözleşmeniz hazırlandı; e-postanızı kontrol edin.":"Satış sözleşmeniz hazırlanıyor, en kısa sürede iletilecek.")+'</div></div>':'<button class="tap" data-act="aiOnayla" data-ref="'+esc(ref)+'" style="width:100%;margin-top:13px;background:var(--green);color:#0a2a16;border:none;border-radius:13px;padding:14px;font-weight:800;font-size:14px;">✓ Teklifi Onayla</button>')
+  +'<div class="sec">YAZIŞMA · Soru / Talep</div>'
+  +'<div class="c" style="padding:12px;">'+thread+'</div>'
+  +'<div style="display:flex;gap:8px;margin-top:8px;"><input id="aimsg" placeholder="Soru / değişiklik talebi yaz…" style="flex:1;background:var(--black);border:1px solid var(--line);border-radius:10px;padding:12px;color:#fff;font-size:12.5px;"><button class="tap" data-act="aiMesajGonder" data-ref="'+esc(ref)+'" style="background:var(--red);border:none;border-radius:10px;width:48px;color:#fff;font-weight:800;font-size:16px;">➤</button></div>'
+  +'</div>';
 }
 function taleplerimView(){
  const f=S.talF||'all'; const all=talepItems();
@@ -644,14 +663,17 @@ function hesapView(){
  const item=(t,icn,act,v)=>'<div class="c tap" data-act="'+act+'" data-v="'+v+'" style="padding:14px;display:flex;align-items:center;gap:11px;margin-bottom:10px;"><div class="sq" style="background:var(--soft);">'+ic(icn,17,'#EDEDED')+'</div><span style="flex:1;font-weight:600;font-size:13.5px;color:#EDEDED;">'+t+'</span>'+ic('cr',17,'#777')+'</div>';
  return '<div class="pad stg"><div class="h1" style="margin-top:4px;">Hesabım</div>'
  +'<div class="c" style="padding:16px;margin-top:13px;display:flex;align-items:center;gap:12px;"><div class="circ" style="width:46px;height:46px;background:var(--red);color:#fff;font-weight:800;font-size:16px;">'+esc(initials(d.firma).toUpperCase())+'</div><div style="min-width:0;"><div style="font-weight:700;font-size:15px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px;">'+esc(d.firma||'')+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px;">Müşteri Portalı</div></div></div>'
- +'<div class="sec">İşlemler</div>'
+ +'<div class="sec">HESAP & ÖDEME</div>'
  +item('Cari Hesabım & Ekstre','wallet','push','cari')
  +item('Ödemelerim & Makbuzlar','receipt','push','odemelerim')
  +item('Taksit Planım','cal','push','taksitler')
- +item('Bildirimler','bell','push','bildirimler')
- +item('Tekliflerim','file','tab','teklifler')
- +item('Fiyat Tekliflerim','tag','tab','fiyatteklif')
+ +'<div class="sec">SİPARİŞ & ÜRÜN</div>'
+ +item('Siparişlerim','box','push','siparisler')
  +item('Makine (Şifre / Servis)','wrench','tab','makine')
+ +item('Fiyat Teklifi İste','tag','open','teklif')
+ +'<div class="sec">DİĞER</div>'
+ +item('Taleplerim','file','tab','taleplerim')
+ +item('Bildirimler','bell','push','bildirimler')
  +'<button class="btng" style="margin-top:8px;" data-act="logout">'+ic('logout',16,'#FF6B5E')+' Çıkış Yap</button>'
  +'</div>';
 }
@@ -862,14 +884,14 @@ function renderLogin(){
 }
 
 /* ---------- render ---------- */
-function nav(){const it=[["home","Anasayfa","home"],["taleplerim","Taleplerim","file"],["makine","Makine","wrench"],["hesap","Hesap","user"]];
- const act=S.pushed?((S.pushed.t==='teklifDetay'||S.pushed.t==='talepDetay')?'taleplerim':(S.pushed.t==='cari'?'home':'home')):S.tab;
- return '<div class="navwrap">'+it.map(t=>'<div class="nslot '+(act===t[0]?'on':'')+'" data-act="tab" data-v="'+t[0]+'">'+ic(t[2],21,act===t[0]?'#C51515':'#8A8A8A')+'<span>'+t[1]+'</span></div>').join('')+'</div>';}
+function nav(){const it=[["home","Anasayfa","home","tab"],["fiyatteklif","Tekliflerim","tag","tab"],["bildir","Ödeme","wallet","open"],["hesap","Hesabım","user","tab"]];
+ const act=S.pushed?((S.pushed.t==='aiTeklifDetay')?'fiyatteklif':'hesap'):S.tab;
+ return '<div class="navwrap">'+it.map(function(t){var on=(t[3]==='tab'&&act===t[0]);return '<div class="nslot '+(on?'on':'')+'" data-act="'+t[3]+'" data-v="'+t[0]+'">'+ic(t[2],21,on?'#C51515':'#8A8A8A')+'<span>'+t[1]+'</span></div>';}).join('')+'</div>';}
 function render(){
  if(!S.authed){renderLogin();return;}
  let h;
  if(S.loading||!S.data){h='<div class="pad"><div class="empty" style="padding-top:150px;">'+ic('refresh',30,'#5A5A5A')+'<div style="margin-top:10px;">Yükleniyor…</div></div></div>';}
- else if(S.pushed){const p=S.pushed;h=p.t==='bildirimler'?bildirimlerView():p.t==='cari'?cariView():p.t==='taksitler'?taksitlerView():p.t==='odemelerim'?odemelerimView():p.t==='makbuz'?makbuzView(p.v):p.t==='teklifDetay'?teklifDetay(p.v):p.t==='talepDetay'?talepDetay(p.kind,p.v):p.t==='siparisler'?siparislerView():p.t==='siparisDetay'?siparisDetay(p.v):homeView();}
+ else if(S.pushed){const p=S.pushed;h=p.t==='aiTeklifDetay'?aiTeklifDetay(p.ref):p.t==='bildirimler'?bildirimlerView():p.t==='cari'?cariView():p.t==='taksitler'?taksitlerView():p.t==='odemelerim'?odemelerimView():p.t==='makbuz'?makbuzView(p.v):p.t==='teklifDetay'?teklifDetay(p.v):p.t==='talepDetay'?talepDetay(p.kind,p.v):p.t==='siparisler'?siparislerView():p.t==='siparisDetay'?siparisDetay(p.v):homeView();}
  else h=({home:homeView,taleplerim:taleplerimView,teklifler:taleplerimView,fiyatteklif:fiyatTeklifView,makine:makineView,hesap:hesapView}[S.tab]||homeView)();
  $("scr").innerHTML=h;
  $("navhost").innerHTML=(S.data&&!S.loading)?nav():"";
@@ -917,6 +939,9 @@ $("app").addEventListener("click",async function(e){
  else if(a==="chooser"){if(v==="sifre")window.PHOTOS=[];S.sheet=v;render();}
  else if(a==="close"){S.sheet=null;S.pdfSrc=null;render();}
  else if(a==="aiPdfAc"){const u=el.getAttribute("data-url");const id=(String(u).match(/[-\w]{25,}/)||[])[0];if(id){S.pdfSrc="https://drive.google.com/file/d/"+id+"/preview";S.pdfDoc="";S.pdfAd=el.getAttribute("data-ad")||"Teklif";S.sheet="pdfview";render();}else if(u){window.open(u,"_blank");}}
+ else if(a==="aiTeklifAc"){const ref=el.getAttribute("data-ref");if(!ref){toast("Teklif açılamadı");return;}S.tab="fiyatteklif";S.pushed={t:"aiTeklifDetay",ref:ref};render();}
+ else if(a==="aiOnayla"){const ref=el.getAttribute("data-ref");if(!confirm("Bu teklifi onaylıyor musunuz? Onaylayınca satış sözleşmesi süreci başlar."))return;try{const j=await api({action:"teklifOnayla",data:{ref:ref}});if(j&&j.ok){toast("Teklif onaylandı ✓");const r=await api({action:"data"});if(r&&r.ok){S.data=r;saveCache(r);}render();}else toast((j&&j.error)||"Onaylanamadı");}catch(e){toast("Bağlantı hatası");}}
+ else if(a==="aiMesajGonder"){const ref=el.getAttribute("data-ref");const inp=document.getElementById("aimsg");const m=inp?inp.value.trim():"";if(!m){toast("Mesaj yazın");return;}try{const j=await api({action:"teklifMesaj",data:{ref:ref,mesaj:m}});if(j&&j.ok){const r=await api({action:"data"});if(r&&r.ok){S.data=r;saveCache(r);}render();toast("Gönderildi ✓");}else toast((j&&j.error)||"Gönderilemedi");}catch(e){toast("Bağlantı hatası");}}
  else if(a==="pdfIndir"){var f=document.getElementById("pdfframe");try{if(f&&f.contentWindow&&f.contentWindow.indirPDF){f.contentWindow.indirPDF();}else{toast("PDF hazır değil, biraz bekleyin");}}catch(_){toast("İndirilemedi");}}
  else if(a==="ibansec"){ document.querySelectorAll(".ibtab").forEach(function(x){x.classList.remove("on");}); el.classList.add("on"); var iv=$("ibanval"),cp=$("ibancopy"),val=el.getAttribute("data-iban")||""; if(iv)iv.textContent=val; if(cp)cp.setAttribute("data-v",val); }
  else if(a==="copy"){const txt=el.getAttribute("data-v")||"";const done=()=>toast("Kopyalandı");try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,()=>toast("Kopyalanamadı"));}else{const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);done();}}catch(e){toast("Kopyalanamadı");}}
