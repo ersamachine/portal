@@ -725,7 +725,7 @@ async function lzMeasure(buf){
   const FILL=new Set([OPS.fill,OPS.eoFill]);
   const cmyk=(c,m,y,k)=>[255*(1-c)*(1-k),255*(1-m)*(1-k),255*(1-y)*(1-k)].map(Math.round);
   const pdf=await L.getDocument({data:buf,isEvalSupported:false}).promise;
-  const by={};
+  const by={}; let bbox=[1e9,1e9,-1e9,-1e9]; const bb=(p)=>{if(!p)return;if(p[0]<bbox[0])bbox[0]=p[0];if(p[1]<bbox[1])bbox[1]=p[1];if(p[0]>bbox[2])bbox[2]=p[0];if(p[1]>bbox[3])bbox[3]=p[1];};
   for(let p=1;p<=pdf.numPages;p++){ const page=await pdf.getPage(p),ops=await page.getOperatorList();
     let ctm=[1,0,0,1,0,0];const st=[];let col=[0,0,0];let pend=null;
     for(let i=0;i<ops.fnArray.length;i++){ const fn=ops.fnArray[i],a=ops.argsArray[i];
@@ -741,8 +741,9 @@ async function lzMeasure(buf){
           else if(o===OPS.curveTo){const c1=ap(ctm,ar[k],ar[k+1]),c2=ap(ctm,ar[k+2],ar[k+3]),e=ap(ctm,ar[k+4],ar[k+5]);if(cur)len+=bez(cur,c1,c2,e);cur=e;k+=6;}
           else if(o===OPS.curveTo2){const c2=ap(ctm,ar[k],ar[k+1]),e=ap(ctm,ar[k+2],ar[k+3]);if(cur)len+=bez(cur,cur,c2,e);cur=e;k+=4;}
           else if(o===OPS.curveTo3){const c1=ap(ctm,ar[k],ar[k+1]),e=ap(ctm,ar[k+2],ar[k+3]);if(cur)len+=bez(cur,c1,e,e);cur=e;k+=4;}
-          else if(o===OPS.rectangle){const x=ar[k],y=ar[k+1],w=ar[k+2],h=ar[k+3];const c=[ap(ctm,x,y),ap(ctm,x+w,y),ap(ctm,x+w,y+h),ap(ctm,x,y+h),ap(ctm,x,y)];for(let j=0;j<4;j++)len+=dist(c[j],c[j+1]);cur=c[0];start=c[0];k+=4;}
+          else if(o===OPS.rectangle){const x=ar[k],y=ar[k+1],w=ar[k+2],h=ar[k+3];const c=[ap(ctm,x,y),ap(ctm,x+w,y),ap(ctm,x+w,y+h),ap(ctm,x,y+h),ap(ctm,x,y)];for(let j=0;j<4;j++){len+=dist(c[j],c[j+1]);bb(c[j]);}cur=c[0];start=c[0];k+=4;}
           else if(o===OPS.closePath){if(cur&&start)len+=dist(cur,start);cur=start;}
+          bb(cur);
         }
         pend={key:col.join(','),mm:len*LZ_PT2MM};
       }
@@ -750,23 +751,28 @@ async function lzMeasure(buf){
       else if(FILL.has(fn))pend=null;
     }
   }
-  return by;
+  return {by:by,bbox:bbox};
 }
 async function lzParse(file){
   const buf=new Uint8Array(await file.arrayBuffer());
-  const by=await lzMeasure(buf);
-  let t={kesim:0,bigleme:0,perforaj:0};
-  for(const k in by){ if(by[k]<=1)continue; const c=lzGuess.apply(null,k.split(',').map(Number)); if(t[c]!==undefined)t[c]+=by[k]; }
-  const a=(S.lazer&&S.lazer.ayar)||{nakit:0,g30:0,g60:0,g90:0,pb:'₺',uretim:''};
+  const res=await lzMeasure(buf); const by=res.by||{}; const bbox=res.bbox||[0,0,0,0];
+  const renk=(S.lazer&&S.lazer.renkler)||{};
+  const catOf=(k)=>{ if(renk[k])return renk[k]; const p=k.split(',').map(Number); return lzGuess(p[0]||0,p[1]||0,p[2]||0); };
+  let t={kesim:0,bigleme:0,perforaj:0,haric:0}; const colors=[];
+  for(const k in by){ if(by[k]<=1)continue; colors.push(k); const c=catOf(k); if(t[c]!==undefined)t[c]+=by[k]; }
+  const a=(S.lazer&&S.lazer.ayar)||{nakit:0,g30:0,g60:0,g90:0,pb:'₺',uretim:'',tahta:0};
   const kesimM=t.kesim/1000,biglemeM=t.bigleme/1000,perfM=t.perforaj/1000,toplamM=kesimM+biglemeM+perfM;
+  const enMM=Math.max(0,(bbox[2]-bbox[0]))*LZ_PT2MM, boyMM=Math.max(0,(bbox[3]-bbox[1]))*LZ_PT2MM;
+  const boardM2=Math.round((enMM*boyMM)/1e6*1000)/1000;
+  const tahtaCost=Math.round(boardM2*(a.tahta||0)*100)/100;
   const oran={nakit:a.nakit||0,'30':a.g30||0,'60':a.g60||0,'90':a.g90||0};
-  const rnd=x=>Math.round(toplamM*x*100)/100;
+  const rnd=x=>Math.round((toplamM*x+tahtaCost)*100)/100;
   const fiyatlar={nakit:rnd(oran.nakit),'30':rnd(oran['30']),'60':rnd(oran['60']),'90':rnd(oran['90'])};
-  return {dosya:file.name,kesim:kesimM,bigleme:biglemeM,perforaj:perfM,toplam:toplamM,oran:oran,fiyatlar:fiyatlar,pb:a.pb||'₺',uretim:a.uretim||'',hasVector:Object.keys(by).length>0};
+  return {dosya:file.name,kesim:kesimM,bigleme:biglemeM,perforaj:perfM,toplam:toplamM,oran:oran,fiyatlar:fiyatlar,boardEn:enMM,boardBoy:boyMM,boardM2:boardM2,tahtaCost:tahtaCost,colors:colors,pb:a.pb||'₺',uretim:a.uretim||'',hasVector:Object.keys(by).length>0};
 }
 window.lzPick=function(e){ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f)return; S.lzBusy=true;render();
   lzParse(f).then(function(res){ S.lzBusy=false; S.lzMode="nakit"; S.lzVade="nakit"; S.lzResult=res.hasVector?res:{err:true,dosya:f.name}; render();
-    if(res.hasVector&&window.LAZER_API_URL){ try{ lazerApi({action:"lazerHesapLog",data:{dosya:res.dosya,kesim:res.kesim,bigleme:res.bigleme,toplam:res.toplam,fiyat:res.fiyatlar?res.fiyatlar.nakit:0}}); }catch(_){ } }
+    if(res.hasVector&&window.LAZER_API_URL){ try{ lazerApi({action:"lazerHesapLog",data:{dosya:res.dosya,kesim:res.kesim,bigleme:res.bigleme,toplam:res.toplam,fiyat:res.fiyatlar?res.fiyatlar.nakit:0}}); }catch(_){ } try{ if(res.colors&&res.colors.length)lazerApi({action:"lazerRenkGor",renkler:res.colors}); }catch(_){ } }
   }).catch(function(err){ S.lzBusy=false; S.lzResult={err:true,dosya:f.name}; render(); });
 };
 function lzDrop(){ return '<label for="lzfile" class="c tap" style="display:block;padding:32px 18px;text-align:center;border:2px dashed var(--gold);background:linear-gradient(160deg,#231d0f,#15151a);border-radius:18px;cursor:pointer;">'
@@ -789,7 +795,7 @@ function lazerView(){
       +'<div class="c" style="padding:18px;border:1px solid var(--gold);background:linear-gradient(135deg,#2a2208,#1a1a1a);">'
       +'<div style="font-size:9px;letter-spacing:1.2px;font-weight:800;color:var(--gold);">SİZE ÖZEL FİYAT'+(vade==="nakit"?" · NAKİT":(" · "+vade+" GÜN VADELİ"))+'</div>'
       +'<div style="font-size:30px;font-weight:800;color:#fff;margin-top:6px;">'+(noP?'—':money(fiyat,r.pb))+'</div>'
-      +'<div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Toplam bıçak <b style="color:#fff;">'+(r.toplam||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' m</b></div>'
+      +'<div style="font-size:11.5px;color:var(--muted);margin-top:3px;">Toplam bıçak <b style="color:#fff;">'+(r.toplam||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' m</b>'+((r.boardEn>0&&r.boardBoy>0)?(' · Tahta <b style="color:#fff;">'+Math.round(r.boardEn/10)+'×'+Math.round(r.boardBoy/10)+' cm</b>'):'')+'</div>'
       +(noP?'<div style="font-size:11.5px;color:#ffd98a;margin-top:6px;">Fiyat hazır değil — lütfen bizimle iletişime geçin.</div>':'<div style="margin-top:9px;"><span class="chip chip-r" style="background:rgba(245,166,35,.18);color:var(--gold);">'+ic('clock',11,'#F5A623')+' Üretim süresi: '+esc(r.uretim||'—')+'</span></div>')
       +'</div>'
       +'<div class="lztabs"><button class="lztab'+(mode==="nakit"?' on':'')+'" data-act="lazerMod" data-v="nakit">Nakit</button><button class="lztab'+(mode==="vadeli"?' on':'')+'" data-act="lazerMod" data-v="vadeli">Vadeli</button></div>'
@@ -1115,7 +1121,7 @@ $("app").addEventListener("click",async function(e){
  else if(a==="lazerMod"){if(v==="nakit"){S.lzMode="nakit";S.lzVade="nakit";}else{S.lzMode="vadeli";if(["30","60","90"].indexOf(S.lzVade)<0)S.lzVade="30";}render();}
  else if(a==="lazerVade"){S.lzVade=v;S.lzMode="vadeli";render();}
  else if(a==="lazerSiparisVer"){const r=S.lzResult;const vade=S.lzVade||"nakit";const fy=(r&&r.fiyatlar&&r.fiyatlar[vade])||0;if(!r||!(fy>0)){toast("Fiyat oluşmadı");return;}if(!window.LAZER_API_URL){toast("ERSA Lazer adresi tanımlı değil");return;}S.sheet="lzConfirm";render();}
- else if(a==="lzSiparisOnay"){const r=S.lzResult;const vade=S.lzVade||"nakit";const fy=(r&&r.fiyatlar&&r.fiyatlar[vade])||0;if(!r||!(fy>0)){toast("Fiyat oluşmadı");return;}el.textContent="Gönderiliyor…";el.disabled=true;try{const j=await lazerApi({action:"lazerSiparis",data:{dosya:r.dosya,kesim:r.kesim,bigleme:r.bigleme,perforaj:r.perforaj,toplam:r.toplam,vade:vade}});if(j&&j.ok){S.sheet=null;S.lzResult=null;toast("Siparişiniz alındı ✓");S.pushed={t:"lazerSipDetay",id:j.id};await loadLazer();}else{toast((j&&j.error)||"Sipariş verilemedi");render();}}catch(e){toast("Bağlantı hatası");render();}}
+ else if(a==="lzSiparisOnay"){const r=S.lzResult;const vade=S.lzVade||"nakit";const fy=(r&&r.fiyatlar&&r.fiyatlar[vade])||0;if(!r||!(fy>0)){toast("Fiyat oluşmadı");return;}el.textContent="Gönderiliyor…";el.disabled=true;try{const j=await lazerApi({action:"lazerSiparis",data:{dosya:r.dosya,kesim:r.kesim,bigleme:r.bigleme,perforaj:r.perforaj,toplam:r.toplam,vade:vade,boardM2:r.boardM2,boardEn:r.boardEn,boardBoy:r.boardBoy}});if(j&&j.ok){S.sheet=null;S.lzResult=null;toast("Siparişiniz alındı ✓");S.pushed={t:"lazerSipDetay",id:j.id};await loadLazer();}else{toast((j&&j.error)||"Sipariş verilemedi");render();}}catch(e){toast("Bağlantı hatası");render();}}
  else if(a==="lazerCizimGonder"){const urun=($("lz_urun")||{}).value||"";const acik=($("lz_acik")||{}).value||"";const kayitli=(S.lazer&&S.lazer.telefon)||"";const farkli=S.lzDiffTel?(($("lz_tel2")||{}).value||"").trim():"";const tel=farkli||kayitli;if(!urun.trim()&&!acik.trim()){toast("Ürün veya açıklama yazın");return;}if(S.lzDiffTel&&!farkli){toast("Farklı numarayı yazın");return;}if(!window.LAZER_API_URL){toast("ERSA Lazer adresi tanımlı değil");return;}el.textContent="Gönderiliyor…";try{const j=await lazerApi({action:"lazerCizim",data:{urun:urun,telefon:tel,aciklama:acik,photos:(window.PHOTOS||[]).slice()}});if(j&&j.ok){window.PHOTOS=[];S.lzDiffTel=false;toast("Talebiniz alındı, sizi arayacağız ✓");S.pushed={t:"lazer"};await loadLazer();}else{toast((j&&j.error)||"Gönderilemedi");render();}}catch(e){toast("Bağlantı hatası");render();}}
  else if(a==="back"){S.pushed=null;render();}
  else if(a==="talF"){S.talF=v;render();}
