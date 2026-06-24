@@ -201,6 +201,7 @@ function bHesap(){ try{ var el=document.getElementById("b_tl"); if(!el)return; v
 function bHesapUsd(){ try{ var el=document.getElementById("b_usd_in"); if(!el)return; var usd=parseFloat(String(el.value||"0").replace(",","."))||0; var r=parseFloat(el.getAttribute("data-rate"))||0; var tl=r>0?usd*r:0; var o=document.getElementById("b_tleq"); if(o)o.textContent=(usd>0&&r>0)?("≈ ₺"+Math.round(tl).toLocaleString("tr-TR")):""; }catch(e){} }
 /* Kredi kartı %3,5 komisyon (sadece ₺ + Kredi Kartı) */
 function bKomTik(){ var h=document.getElementById("b_kom"); if(!h)return; h.value=(h.value==="1"?"0":"1"); bKom(); }
+function bCek(){ try{ var y=document.getElementById("b_yon"); var box=document.getElementById("cekfoto"); if(!box)return; box.style.display=(y&&y.value==="Çek")?"block":"none"; }catch(e){} }
 function bKom(){ try{
   var kk=document.getElementById("komKart"); if(!kk)return;
   var tlEl=document.getElementById("blTL"); var tlVis=tlEl&&tlEl.style.display!=="none";
@@ -1042,7 +1043,13 @@ function sheetForm(){
    +odemeBilgiBlok()
    +'<div class="two">'
      +'<div><label class="lbl">Ödeme Tarihi</label><input id="b_tar" class="field" type="date" value="'+todayISO()+'"></div>'
-     +'<div><label class="lbl">Yöntem</label><select id="b_yon" class="field" onchange="bKom()"><option>Havale/EFT</option><option>Nakit</option><option>Kredi Kartı</option><option>Çek</option></select></div>'
+     +'<div><label class="lbl">Yöntem</label><select id="b_yon" class="field" onchange="bKom();bCek()"><option>Havale/EFT</option><option>Nakit</option><option>Kredi Kartı</option><option>Çek</option></select></div>'
+   +'</div>'
+   +'<div id="cekfoto" style="display:none;margin-bottom:13px;border:1px solid #3a2a12;border-radius:16px;padding:13px 14px;background:#1a1408;">'
+     +'<div style="display:flex;align-items:center;gap:9px;margin-bottom:7px;">'+ic("alert",15,"#F5A623")+'<div style="font-size:12.5px;font-weight:700;color:#f0d9a8;">Çek fotoğrafı — ön ve arka (zorunlu)</div></div>'
+     +'<div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">Çek ile ödemede çekin <b style="color:#e3b85f;">ön</b> ve <b style="color:#e3b85f;">arka</b> yüzünün net fotoğrafını ekleyin. Yüklemeden bildirim gönderilemez.</div>'
+     +'<div id="photostrip" style="display:flex;gap:8px;flex-wrap:wrap;"><label for="photofile" style="width:62px;height:62px;border:1.5px dashed var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;">'+ic("plus",18,"#888")+'</label></div>'
+     +'<input id="photofile" type="file" accept="image/*" multiple style="display:none;" onchange="pickPhotos(event)">'
    +'</div>'
    +'<input type="hidden" id="b_kom" value="0">'
    +'<div id="komKart" style="display:none;margin-bottom:13px;border:1px solid #3a2a12;border-radius:18px;overflow:hidden;">'
@@ -1180,7 +1187,7 @@ $("app").addEventListener("click",async function(e){
  else if(a==="ekstrePdf"){S.ekstreTk=true;S.sheet="ekstrePdf";render();}
  else if(a==="ekstreTkToggle"){var _c=(S.ekstreTk!==false);S.ekstreTk=!_c;render();}
  else if(a==="ekstrePdfYap"){var _tk=(S.ekstreTk!==false);S.sheet=null;render();ekstrePdf(_tk);}
- else if(a==="open"){if(v==="teklif"||v==="sifre"||v==="yedekParcaForm")window.PHOTOS=[];S.sheet=v;render();}
+ else if(a==="open"){if(v==="teklif"||v==="sifre"||v==="yedekParcaForm"||v==="bildir")window.PHOTOS=[];S.sheet=v;render();}
  else if(a==="ypDetay"){S.pushed={t:"yedekParcaDetay",v:+v};render();}
  else if(a==="ypGonder"){const parca=($("yp_parca")||{}).value||"";if(!parca.trim()){toast("Parça bilgisi yazın");return;}el.textContent="Gönderiliyor…";try{const j=await api({action:"yedekParcaTalep",data:{makine:($("yp_makine")||{}).value||"",parca:parca,adet:($("yp_adet")||{}).value||"",not:($("yp_not")||{}).value||"",photos:(window.PHOTOS||[]).slice()}});if(j&&j.ok){window.PHOTOS=[];const rr=await api({action:"data"});if(rr&&rr.ok){S.data=rr;saveCache(rr);}toast("Talebiniz alındı ✓");S.sheet=null;S.pushed={t:"yedekParca"};render();}else{toast((j&&j.error)||"Gönderilemedi");render();}}catch(e){toast("Bağlantı hatası");render();}}
  else if(a==="ypOnay"){const row=el.getAttribute("data-row");if(!confirm("Bu parçayı bu fiyata onaylıyor musunuz? Onaylayınca sipariş sürecine geçer."))return;try{const j=await api({action:"yedekParcaOnay",data:{row:row}});if(j&&j.ok){const rr=await api({action:"data"});if(rr&&rr.ok){S.data=rr;saveCache(rr);}toast("Onaylandı ✓");render();}else toast((j&&j.error)||"Onaylanamadı");}catch(e){toast("Bağlantı hatası");}}
@@ -1209,6 +1216,9 @@ $("app").addEventListener("click",async function(e){
    if(v==="TL"){ tl.style.display="block"; us.style.display="none"; if(pt){pt.classList.add("on");pt.style.color="#fff";} if(pu){pu.classList.remove("on");pu.style.color="var(--muted)";} bHesap(); }
    else { tl.style.display="none"; us.style.display="block"; if(pu){pu.classList.add("on");pu.style.color="#fff";} if(pt){pt.classList.remove("on");pt.style.color="var(--muted)";} } ibanCur(v==="TL"?"TL":"USD"); bKom(); }
  else if(a==="bildirsave"){
+   const yonSel = $("b_yon") ? $("b_yon").value : "";
+   if(yonSel==="Çek" && (window.PHOTOS||[]).length<2){ toast("Çek ödemesi için çekin ön ve arka fotoğrafını yükleyin"); return; }
+   const cekPhotos = (yonSel==="Çek") ? (window.PHOTOS||[]).slice() : [];
    const tlVisible = $("blTL") && $("blTL").style.display!=="none";
    if(tlVisible){
      const tlEl=$("b_tl"); const tl=parseFloat(String(tlEl.value||"").replace(",","."))||0;
@@ -1221,10 +1231,10 @@ $("app").addEventListener("click",async function(e){
        ack = ack ? (ack+" "+note) : note;
      }
      const usd=rate>0?Math.round((netTL/rate)*100)/100:0;
-     await submit("bildirim",{tutar:netTL,pb:"₺",kur:rate,usdKarsilik:usd,tarih:$("b_tar").value,yontem:yon,aciklama:ack},el,!tl&&"Tutar girin");
+     await submit("bildirim",{tutar:netTL,pb:"₺",kur:rate,usdKarsilik:usd,tarih:$("b_tar").value,yontem:yon,aciklama:ack,photos:cekPhotos},el,!tl&&"Tutar girin");
    } else {
      const usd=parseFloat(String($("b_usd_in").value||"").replace(",","."))||0;
-     await submit("bildirim",{tutar:usd,pb:"$",tarih:$("b_tar").value,yontem:$("b_yon").value,aciklama:$("b_ack").value.trim()},el,!usd&&"Tutar girin");
+     await submit("bildirim",{tutar:usd,pb:"$",tarih:$("b_tar").value,yontem:$("b_yon").value,aciklama:$("b_ack").value.trim(),photos:cekPhotos},el,!usd&&"Tutar girin");
    }
  }
  else if(a==="sifresave")  await submit("sifreTalep",{makine:$("s_mak").value.trim(),photos:(window.PHOTOS||[]).slice()},el,false);
@@ -1237,7 +1247,7 @@ async function submit(action,data,el,errMsg){
  const old=el.innerHTML;el.style.opacity=".7";el.textContent="Gönderiliyor…";
  try{const j=await api({action,data});
    if(j.ok===false){toast(j.error||"Gönderilemedi");el.style.opacity="1";el.innerHTML=old;return;}
-   if(action==="teklifTalep"||action==="sifreTalep")window.PHOTOS=[];
+   if(action==="teklifTalep"||action==="sifreTalep"||action==="bildirim")window.PHOTOS=[];
    S.sheet=null;S.success=action;render();
    try{ await load(true); }catch(_){}
  }catch(e){toast("Bağlantı hatası");el.style.opacity="1";el.innerHTML=old;}
