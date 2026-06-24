@@ -931,7 +931,7 @@ function odemeBilgiBlok(){
 function ibanCur(want){var tabs=document.querySelectorAll(".ibtab");if(!tabs.length)return;var hit=null;tabs.forEach(function(x){if(x.getAttribute("data-cur")===want)hit=x;});if(!hit)return;tabs.forEach(function(x){x.classList.remove("on");});hit.classList.add("on");var iv=document.getElementById("ibanval"),cp=document.getElementById("ibancopy"),val=hit.getAttribute("data-iban")||"";if(iv)iv.textContent=val;if(cp)cp.setAttribute("data-v",val);}
 function pdfOverlay(){
  var isUrl=!!S.pdfSrc;
- var title=isUrl?esc(S.pdfAd||'Belge'):('Cari Ekstre'+(S.pdfAd?' · '+esc(S.pdfAd):''));
+ var title=(isUrl?'Fiyat Teklifi':'Cari Ekstre')+(S.pdfAd?' · '+esc(S.pdfAd):'');
  var act=isUrl
    ? '<a class="btnred" href="'+esc(String(S.pdfSrc).replace("/preview","/view"))+'" target="_blank" rel="noopener" style="width:auto;margin:0;padding:10px 15px;font-size:13px;box-shadow:none;text-decoration:none;display:inline-flex;align-items:center;gap:5px;">'+ic("dl",15,"#fff")+' Aç</a>'
    : '<button class="btnred" data-act="pdfIndir" style="width:auto;margin:0;padding:10px 15px;font-size:13px;box-shadow:none;">'+ic("dl",15,"#fff")+' İndir</button>';
@@ -944,6 +944,19 @@ function pdfOverlay(){
    +'<div style="flex:1;min-width:0;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+title+'</div>'
    +act
   +'</div>'+frame
+ +'</div>';
+}
+function dekontOverlay(){
+ var id=S.dekontId||""; var img=id?('https://drive.google.com/thumbnail?id='+id+'&sz=w1600'):'';
+ return '<div style="position:absolute;inset:0;z-index:70;background:#1b1b1b;display:flex;flex-direction:column;">'
+  +'<div style="display:flex;align-items:center;gap:10px;background:#1b1b1b;color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 12px 10px;flex-shrink:0;">'
+   +'<div class="tap" data-act="close" style="display:flex;align-items:center;gap:5px;background:#2a2a2a;border-radius:11px;padding:9px 13px 9px 10px;flex-shrink:0;font-weight:700;font-size:13.5px;color:#fff;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Geri</div>'
+   +'<div style="flex:1;min-width:0;font-weight:700;font-size:14px;">Dekont</div>'
+  +'</div>'
+  +'<div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;display:flex;align-items:flex-start;justify-content:center;padding:14px;background:#54585e;">'
+   +'<img src="'+esc(img)+'" referrerpolicy="no-referrer" style="max-width:100%;height:auto;border-radius:8px;background:#fff;display:block;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\';">'
+   +'<div style="display:none;color:#e6e6e6;font-size:13px;padding:48px 20px;text-align:center;line-height:1.6;">Dekont görüntülenemedi. Lütfen tekrar deneyin.</div>'
+  +'</div>'
  +'</div>';
 }
 function gecikmeFaizi(){
@@ -973,6 +986,7 @@ window.faizYaz=function(usd){
 };
 function sheetForm(){
  if(S.sheet==="pdfview") return pdfOverlay();
+ if(S.sheet==="dekontView") return dekontOverlay();
  if(S.sheet==="lzConfirm"){ const r=S.lzResult||{}; const vade=S.lzVade||"nakit"; const fy=(r.fiyatlar&&r.fiyatlar[vade])||0; const vlbl=(vade==="nakit"?"Nakit":(vade+" Gün Vadeli"));
    return wrap("Siparişi Onayla",
      '<div class="c" style="padding:16px;margin-bottom:13px;border:1px solid var(--gold);background:linear-gradient(135deg,#2a2208,#1a1a1a);"><div style="font-size:9px;letter-spacing:1.1px;font-weight:800;color:var(--gold);">'+esc(vlbl.toLocaleUpperCase("tr"))+' FİYAT</div><div style="font-size:28px;font-weight:800;color:#fff;margin-top:5px;">'+money(fy,r.pb||"₺")+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:4px;">'+esc(r.dosya||"")+' · '+(r.toplam||0).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2})+' m</div><div style="margin-top:9px;"><span class="chip chip-r" style="background:rgba(245,166,35,.18);color:var(--gold);">'+ic("clock",11,"#F5A623")+' Üretim süresi: '+esc(r.uretim||"-")+'</span></div></div>'
@@ -1199,7 +1213,7 @@ $("app").addEventListener("click",async function(e){
  else if(a==="chooser"){if(v==="sifre")window.PHOTOS=[];S.sheet=v;render();}
  else if(a==="close"){S.sheet=null;S.pdfSrc=null;render();}
  else if(a==="aiPdfAc"){const u=el.getAttribute("data-url");const id=(String(u).match(/[-\w]{25,}/)||[])[0];if(id){S.pdfSrc="https://drive.google.com/file/d/"+id+"/preview";S.pdfDoc="";S.pdfAd=el.getAttribute("data-ad")||"Teklif";S.sheet="pdfview";render();}else if(u){window.open(u,"_blank");}}
- else if(a==="dekontGor"){const u=el.getAttribute("data-url");const id=(String(u).match(/[-\w]{25,}/)||[])[0];if(id){S.pdfSrc="https://drive.google.com/file/d/"+id+"/preview";S.pdfDoc="";S.pdfAd="Dekont";S.sheet="pdfview";render();}else if(u){window.open(u,"_blank");}}
+ else if(a==="dekontGor"){const u=el.getAttribute("data-url");const id=(String(u).match(/[-\w]{25,}/)||[])[0];if(id){S.dekontId=id;S.sheet="dekontView";render();}else{toast("Dekont açılamadı");}}
  else if(a==="aiTeklifAc"){const ref=el.getAttribute("data-ref");if(!ref){toast("Teklif açılamadı");return;}S.tab="fiyatteklif";S.pushed={t:"aiTeklifDetay",ref:ref};render();}
  else if(a==="aiOnayla"){const ref=el.getAttribute("data-ref");if(!confirm("Bu teklifi onaylıyor musunuz? Onaylayınca satış sözleşmesi süreci başlar."))return;try{const j=await api({action:"teklifOnayla",data:{ref:ref}});if(j&&j.ok){toast("Teklif onaylandı ✓");const r=await api({action:"data"});if(r&&r.ok){S.data=r;saveCache(r);}render();}else toast((j&&j.error)||"Onaylanamadı");}catch(e){toast("Bağlantı hatası");}}
  else if(a==="aiMesajGonder"){const ref=el.getAttribute("data-ref");const inp=document.getElementById("aimsg");const m=inp?inp.value.trim():"";if(!m){toast("Mesaj yazın");return;}try{const j=await api({action:"teklifMesaj",data:{ref:ref,mesaj:m}});if(j&&j.ok){const r=await api({action:"data"});if(r&&r.ok){S.data=r;saveCache(r);}render();toast("Gönderildi ✓");}else toast((j&&j.error)||"Gönderilemedi");}catch(e){toast("Bağlantı hatası");}}
