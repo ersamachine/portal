@@ -348,6 +348,7 @@ function homeView(){
  +'</div>'
  +(((d.aiTeklifler||[]).length)?(function(){var q=d.aiTeklifler[0]||{};var on=(q.durum==="Onaylandı"||q.durum==="Sözleşme");return '<div class="c tap" data-act="aiTeklifAc" data-ref="'+esc(q.ref||"")+'" style="margin-top:16px;padding:16px;border:1px solid var(--gold);background:linear-gradient(135deg,#2a2208,#1a1a1a);"><div style="display:flex;align-items:center;gap:7px;font-size:9px;letter-spacing:1.2px;font-weight:800;color:var(--gold);">'+ic('star',13,'#F5A623')+' SİZE ÖZEL FİYAT TEKLİFİ'+(d.aiTeklifler.length>1?(" ("+d.aiTeklifler.length+")"):"")+'</div><div style="font-weight:800;font-size:15px;color:#fff;margin-top:8px;line-height:1.25;">'+esc(q.makine||"Fiyat teklifi")+'</div><div style="font-size:18px;font-weight:800;color:var(--gold);margin-top:5px;">'+money(q.satis,q.pb)+'</div><div style="margin-top:11px;background:var(--gold);color:#1a1a1a;border-radius:10px;padding:11px;text-align:center;font-weight:800;font-size:13px;">'+(on?"✓ Onayladınız — Görüntüle":"Teklifi Gör / Onayla →")+'</div></div>';})():'')
  +'<div class="c tap" data-act="push" data-v="lazer" style="margin-top:14px;padding:16px;display:flex;align-items:center;gap:13px;border:1px solid #5a2222;background:linear-gradient(135deg,#2a1212,#171318);position:relative;overflow:hidden;"><div style="position:absolute;top:-20px;right:-20px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(197,21,21,.25),transparent 70%);"></div><div class="sq" style="background:linear-gradient(135deg,#C51515,#981224);box-shadow:0 6px 16px rgba(197,21,21,.4);">'+ic('blade',20,'#fff')+'</div><div style="flex:1;min-width:0;position:relative;"><div style="display:flex;align-items:center;gap:7px;"><span style="font-weight:800;font-size:14.5px;color:#fff;">ERSA Lazer</span><span style="font-size:8.5px;font-weight:800;letter-spacing:.6px;background:var(--gold);color:#1a1505;padding:2px 7px;border-radius:6px;">BIÇAK FİYATI</span></div><div style="font-size:11.5px;color:#c9b9bb;margin-top:2px;">Kalıp çizimini yükle → saniyede metraj &amp; fiyat</div></div>'+ic('cr',17,'#c98')+'</div>'
+ +'<div class="c tap" data-act="push" data-v="yedekParca" style="margin-top:10px;padding:15px;display:flex;align-items:center;gap:12px;"><div class="sq" style="background:rgba(59,130,246,.16);">'+ic('box',19,'#5B8DEF')+'</div><div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:14px;color:#fff;">Yedek Parça Talebi</div><div style="font-size:11.5px;color:var(--muted);">Fotoğraf yükle · fiyat/durum öğren</div></div>'+ic('cr',16,'#777')+'</div>'
  +'<button class="tap" data-act="open" data-v="bildir" style="width:100%;margin-top:14px;background:var(--red);color:#fff;border:none;border-radius:14px;padding:15px;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;">'+ic('wallet',18,'#fff')+' Ödeme Bildir</button>'
  +(function(){const o=siparisAktif();if(!o)return'';const cur=asamaIx(o.durum);return '<div class="c tap" data-act="push" data-v="siparisler" style="margin-top:14px;padding:16px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);">AKTİF SİPARİŞ</div><span class="chip chip-r">'+ic('truck',10)+' '+esc(o.durum)+'</span></div><div style="font-weight:700;font-size:14.5px;color:#fff;margin-top:8px;">'+esc(o.makine||'Sipariş')+'</div><div class="prog"><div style="width:'+siparisPct(cur)+'%;"></div></div><div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--muted);"><span>'+(cur+1)+'/'+SIPARIS_ASAMA.length+' aşama</span><span>Takip et ›</span></div></div>';})()
  +'</div>';
@@ -701,6 +702,7 @@ function hesapView(){
  +'<div class="sec">SİPARİŞ & ÜRÜN</div>'
  +item('Siparişlerim','box','push','siparisler')
  +item('ERSA Lazer · Bıçak Fiyatı','blade','push','lazer')
+ +item('Yedek Parça','box','push','yedekParca')
  +item('Makine (Şifre / Servis)','wrench','tab','makine')
  +item('Fiyat Teklifi İste','tag','open','teklif')
  +'<div class="sec">DİĞER</div>'
@@ -864,6 +866,37 @@ function lazerEkstreView(){
    +'<div class="c" style="margin-top:13px;padding:15px 16px;display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:9px;font-weight:800;letter-spacing:1px;color:var(--muted);">GÜNCEL LAZER BAKİYE</div><div class="bignum" style="font-size:24px;color:'+((Lz.bakiye||0)>0?"#fff":"#2ED573")+';margin-top:3px;">'+money(Lz.bakiye||0,"₺")+'</div></div><div style="text-align:right;font-size:11px;color:var(--muted);">borç '+money(Lz.borc||0,"₺")+'<br>tahsilat '+money(Lz.tahsilat||0,"₺")+'</div></div>'
    +'<div style="display:flex;flex-direction:column;gap:9px;margin-top:13px;">'+rows+'</div></div>';
 }
+/* ---------- Yedek Parça (müşteri) ---------- */
+function ypFotoUrls(t){var m=String(t||"").match(/https?:\/\/[^\s\]]+/g);return m||[];}
+function ypBadge(d){var c={"Talep Alındı":["rgba(255,159,67,.2)","#f5a623"],"İnceleniyor":["rgba(59,130,246,.2)","#6fa8f5"],"Fiyat Verildi":["rgba(115,103,240,.2)","#a99cf5"],"Sipariş Verildi":["rgba(59,130,246,.2)","#6fa8f5"],"Kargolandı":["rgba(59,130,246,.2)","#6fa8f5"],"Teslim Edildi":["rgba(40,199,111,.2)","#41d98a"],"İptal":["rgba(234,84,85,.2)","#ff8a8a"]}[d]||["rgba(255,159,67,.2)","#f5a623"];return '<span style="font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:20px;background:'+c[0]+';color:'+c[1]+';">'+esc(d||"")+'</span>';}
+function yedekParcaView(){
+  const list=(S.data&&S.data.yedekParca)||[];
+  const cards=list.map(function(x,i){ const nfoto=ypFotoUrls(x.foto).length;
+    return '<div class="c tap" data-act="ypDetay" data-v="'+i+'" style="padding:15px;"><div style="display:flex;justify-content:space-between;align-items:center;">'+ypBadge(x.durum)+'<span style="font-size:10.5px;color:var(--muted2);">'+esc(x.zaman)+'</span></div><div style="font-weight:700;font-size:14px;margin-top:8px;color:#fff;">'+esc(x.parca||"Yedek parça")+'</div><div style="font-size:11.5px;color:var(--muted);">'+(x.makine?esc(x.makine)+" · ":"")+(x.adet?esc(x.adet)+" adet":"")+(nfoto?" · 🖼 "+nfoto:"")+'</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px;">'+((x.fiyatGoster&&x.fiyat>0)?'<b style="color:#e3b85f;">'+money(x.fiyat,"₺")+'</b>':'<span></span>')+'<span style="font-size:12px;color:var(--red);font-weight:700;">Görüntüle ›</span></div></div>';
+  }).join('')||'<div class="empty">Henüz yedek parça talebiniz yok.</div>';
+  return '<div class="pad stg"><div class="back" data-act="back">'+ic('cl',18)+' Geri</div><div class="h1" style="margin-top:4px;">Yedek Parça</div><div class="sub">Parça talebi ve durum takibi</div>'
+   +'<button class="btnred" style="margin-top:13px;" data-act="open" data-v="yedekParcaForm">'+ic('plus',17,'#fff')+' Yeni Parça Talebi</button>'
+   +'<div style="display:flex;flex-direction:column;gap:11px;margin-top:14px;">'+cards+'</div></div>';
+}
+function yedekParcaDetayView(i){
+  const x=((S.data&&S.data.yedekParca)||[])[i]; if(!x)return '<div class="pad stg"><div class="back" data-act="push" data-v="yedekParca">'+ic('cl',18)+' Geri</div><div class="empty">Bulunamadı.</div></div>';
+  const urls=ypFotoUrls(x.foto);
+  const ASAMA=["Talep Alındı","İnceleniyor","Fiyat Verildi","Sipariş Verildi","Kargolandı","Teslim Edildi"];
+  const cur=Math.max(0,ASAMA.indexOf(x.durum));
+  const steps=ASAMA.map(function(st,k){var done=k<cur,now=(k===cur&&x.durum!=="İptal");var c=done?'#2ED573':(now?'#f5a623':'#3a3a42');var tc=(done||now)?'#fff':'#777';return '<div style="display:flex;align-items:center;gap:12px;padding:7px 0;"><div style="width:13px;height:13px;border-radius:50%;background:'+c+';flex:0 0 auto;'+(now?'box-shadow:0 0 0 4px rgba(245,166,35,.18);':'')+'"></div><div style="font-size:12.5px;font-weight:'+((done||now)?'700':'500')+';color:'+tc+';">'+esc(st)+(done?'  ✓':'')+'</div></div>';}).join('');
+  const fotos=urls.length?('<div style="display:flex;gap:8px;flex-wrap:wrap;margin:11px 0;">'+urls.map(function(u){var id=(String(u).match(/[-\w]{25,}/)||[])[0];var th=id?('https://drive.google.com/thumbnail?id='+id+'&sz=w400'):u;return '<a href="'+esc(u)+'" target="_blank" rel="noopener" style="width:72px;height:72px;border-radius:11px;border:1px solid #2a2a31;background:#1b1b21 center/cover no-repeat;background-image:url('+th+');display:block;"></a>';}).join('')+'</div>'):'';
+  let yanit='';
+  if(x.aciklama)yanit+='<div style="background:#11203a;border:1px solid #284a78;border-radius:11px;padding:11px 13px;margin-top:11px;font-size:12.5px;color:#bcd4f5;line-height:1.5;"><b style="color:#fff;">ERSA yanıtı:</b> '+esc(x.aciklama)+'</div>';
+  if(x.fiyatGoster&&x.fiyat>0){ yanit+='<div style="display:flex;justify-content:space-between;align-items:center;background:#221d12;border:1px solid #4d3f1a;border-radius:11px;padding:12px 14px;margin-top:9px;"><span style="font-size:11.5px;color:#9a9aa6;">Fiyat</span><b style="color:#e3b85f;font-size:17px;">'+money(x.fiyat,"₺")+'</b></div>';
+    if(x.onay==="Onaylandı")yanit+='<div style="text-align:center;color:#41d98a;font-weight:700;font-size:13px;margin-top:12px;">✓ Onayladınız</div>';
+    else yanit+='<button class="btnred" style="margin-top:12px;" data-act="ypOnay" data-row="'+x._row+'">'+ic("check",16,"#fff")+' Onayla / Sipariş Ver</button>';
+  }
+  return '<div class="pad stg"><div class="back" data-act="push" data-v="yedekParca">'+ic('cl',18)+' Yedek Parça</div>'
+   +'<div style="font-weight:800;font-size:16px;margin-top:6px;">'+esc(x.parca||"Yedek parça")+'</div><div style="font-size:11.5px;color:var(--muted);">'+(x.makine?esc(x.makine)+" · ":"")+(x.adet?esc(x.adet)+" adet":"")+'</div>'
+   +fotos
+   +'<div class="c" style="padding:8px 16px;margin-top:6px;">'+steps+'</div>'
+   +yanit+(x.not?'<div style="font-size:11.5px;color:var(--muted);margin-top:11px;">Notunuz: '+esc(x.not)+'</div>':'')+'</div>';
+}
 /* ---------- FORMLAR ---------- */
 function wrap(title,inner){return '<div class="ovl"><div class="sheet"><div class="sheethead"><div class="sheettitle">'+esc(title)+'</div><div class="circ tap" data-act="close" style="background:#2C2C2C;">'+ic('x',16,'#EDEDED')+'</div></div>'+inner+'</div></div>';}
 function odemeBilgiBlok(){
@@ -941,6 +974,16 @@ function sheetForm(){
      +(vade!=="nakit"?'<div style="display:flex;gap:11px;align-items:flex-start;background:#11203a;border:1px solid #284a78;border-radius:14px;padding:13px 14px;margin-bottom:16px;"><div style="flex:0 0 auto;margin-top:1px;">'+ic("info",19,"#6fa8f5")+'</div><div style="font-size:12px;color:#bcd4f5;line-height:1.55;">'+esc(vlbl)+' seçtiniz. <b style="color:#fff;">Vade tarihinde ödeme yapılmazsa aylık %5 fark</b> hesaplanır.</div></div>':'')
      +'<button class="btnred" data-act="lzSiparisOnay">'+ic("check",16,"#fff")+' Onaylıyorum, Sipariş Ver</button>'
      +'<button class="btng" style="margin-top:9px;" data-act="close">Vazgeç</button>');
+ }
+ if(S.sheet==="yedekParcaForm"){ var fst='width:100%;background:#0d0d10;border:1px solid var(--line);border-radius:10px;padding:11px;color:#fff;font-size:13px;'; var lst='font-size:11px;color:var(--muted);display:block;margin:11px 0 5px;font-weight:600;';
+   return wrap("Yedek Parça Talebi",
+     '<div style="font-size:12.5px;color:var(--muted);margin-bottom:2px;line-height:1.5;">İhtiyacınız olan parçayı bildirin; net belirlemek için <b style="color:#e3b85f;">fotoğraf ekleyin</b>.</div>'
+     +'<label style="'+lst+'">Makine</label><input id="yp_makine" style="'+fst+'" placeholder="Makinenizi yazın">'
+     +'<label style="'+lst+'">Parça adı / açıklama</label><textarea id="yp_parca" rows="2" style="'+fst+'resize:vertical;" placeholder="örn. besleme silindiri rulmanı, model no…"></textarea>'
+     +'<label style="'+lst+'">Adet</label><input id="yp_adet" style="'+fst+'" placeholder="1">'
+     +'<label style="'+lst+'">Parça fotoğrafı (önemli)</label><div id="photostrip" style="display:flex;gap:8px;flex-wrap:wrap;"><label for="photofile" style="width:62px;height:62px;border:1.5px dashed var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;">'+ic("plus",18,"#888")+'</label></div><input id="photofile" type="file" accept="image/*" multiple style="display:none;" onchange="pickPhotos(event)">'
+     +'<label style="'+lst+'">Not (isteğe bağlı)</label><input id="yp_not" style="'+fst+'" placeholder="aciliyet, eski parça üstündeki kod…">'
+     +'<button class="btnred" style="margin-top:15px;" data-act="ypGonder">'+ic("send",16,"#fff")+' Talebi Gönder</button>');
  }
  if(S.sheet==="ekstrePdf"){var _tk=(S.ekstreTk!==false);return wrap("Cari Ekstre",'<div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">'+esc((S.data&&S.data.firma)||"")+' — PDF\'e nelerin gireceğini seç.</div>'+'<div class="c tap" data-act="ekstreTkToggle" style="padding:14px;display:flex;align-items:center;gap:12px;"><div style="width:46px;height:27px;border-radius:20px;flex-shrink:0;background:'+(_tk?"#2ED573":"#3a3a3a")+';position:relative;transition:.15s;"><div style="position:absolute;top:3px;left:'+(_tk?"22px":"3px")+';width:21px;height:21px;border-radius:50%;background:#fff;transition:.15s;"></div></div><div style="flex:1;"><div style="font-weight:700;color:#fff;font-size:13.5px;">Açık Taksitler / Ödeme Planı\'nı ekle</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px;">'+(_tk?"Taksit planı PDF\'e eklenecek":"Eklenmeyecek — sadece hesap hareketleri")+'</div></div></div>'+'<button class="btnred" data-act="ekstrePdfYap" style="margin-top:14px;">'+ic("receipt",16,"#fff")+' PDF oluştur</button>');}
  if(S.sheet==="yeniTalep") return wrap("Yeni Talep",
@@ -1085,7 +1128,7 @@ function render(){
  if(!S.authed){renderLogin();return;}
  let h;
  if(S.loading||!S.data){h='<div class="pad"><div class="empty" style="padding-top:150px;">'+ic('refresh',30,'#5A5A5A')+'<div style="margin-top:10px;">Yükleniyor…</div></div></div>';}
- else if(S.pushed){const p=S.pushed;h=p.t==='aiTeklifDetay'?aiTeklifDetay(p.ref):p.t==='bildirimler'?bildirimlerView():p.t==='cari'?cariView():p.t==='taksitler'?taksitlerView():p.t==='odemelerim'?odemelerimView():p.t==='makbuz'?makbuzView(p.v):p.t==='teklifDetay'?teklifDetay(p.v):p.t==='talepDetay'?talepDetay(p.kind,p.v):p.t==='siparisler'?siparislerView():p.t==='siparisDetay'?siparisDetay(p.v):p.t==='lazer'?lazerView():p.t==='lazerSiparislerim'?lazerSiparislerimView():p.t==='lazerSipDetay'?lazerSipDetayView(p.id):p.t==='lazerCizim'?lazerCizimView():p.t==='lazerEkstre'?lazerEkstreView():homeView();}
+ else if(S.pushed){const p=S.pushed;h=p.t==='aiTeklifDetay'?aiTeklifDetay(p.ref):p.t==='bildirimler'?bildirimlerView():p.t==='cari'?cariView():p.t==='taksitler'?taksitlerView():p.t==='odemelerim'?odemelerimView():p.t==='makbuz'?makbuzView(p.v):p.t==='teklifDetay'?teklifDetay(p.v):p.t==='talepDetay'?talepDetay(p.kind,p.v):p.t==='siparisler'?siparislerView():p.t==='siparisDetay'?siparisDetay(p.v):p.t==='lazer'?lazerView():p.t==='lazerSiparislerim'?lazerSiparislerimView():p.t==='lazerSipDetay'?lazerSipDetayView(p.id):p.t==='lazerCizim'?lazerCizimView():p.t==='lazerEkstre'?lazerEkstreView():p.t==='yedekParca'?yedekParcaView():p.t==='yedekParcaDetay'?yedekParcaDetayView(p.v):homeView();}
  else h=({home:homeView,taleplerim:taleplerimView,teklifler:taleplerimView,fiyatteklif:fiyatTeklifView,makine:makineView,hesap:hesapView}[S.tab]||homeView)();
  $("scr").innerHTML=h;
  $("navhost").innerHTML=(S.data&&!S.loading)?nav():"";
@@ -1137,7 +1180,10 @@ $("app").addEventListener("click",async function(e){
  else if(a==="ekstrePdf"){S.ekstreTk=true;S.sheet="ekstrePdf";render();}
  else if(a==="ekstreTkToggle"){var _c=(S.ekstreTk!==false);S.ekstreTk=!_c;render();}
  else if(a==="ekstrePdfYap"){var _tk=(S.ekstreTk!==false);S.sheet=null;render();ekstrePdf(_tk);}
- else if(a==="open"){if(v==="teklif"||v==="sifre")window.PHOTOS=[];S.sheet=v;render();}
+ else if(a==="open"){if(v==="teklif"||v==="sifre"||v==="yedekParcaForm")window.PHOTOS=[];S.sheet=v;render();}
+ else if(a==="ypDetay"){S.pushed={t:"yedekParcaDetay",v:+v};render();}
+ else if(a==="ypGonder"){const parca=($("yp_parca")||{}).value||"";if(!parca.trim()){toast("Parça bilgisi yazın");return;}el.textContent="Gönderiliyor…";try{const j=await api({action:"yedekParcaTalep",data:{makine:($("yp_makine")||{}).value||"",parca:parca,adet:($("yp_adet")||{}).value||"",not:($("yp_not")||{}).value||"",photos:(window.PHOTOS||[]).slice()}});if(j&&j.ok){window.PHOTOS=[];const rr=await api({action:"data"});if(rr&&rr.ok){S.data=rr;saveCache(rr);}toast("Talebiniz alındı ✓");S.sheet=null;S.pushed={t:"yedekParca"};render();}else{toast((j&&j.error)||"Gönderilemedi");render();}}catch(e){toast("Bağlantı hatası");render();}}
+ else if(a==="ypOnay"){const row=el.getAttribute("data-row");if(!confirm("Bu parçayı bu fiyata onaylıyor musunuz? Onaylayınca sipariş sürecine geçer."))return;try{const j=await api({action:"yedekParcaOnay",data:{row:row}});if(j&&j.ok){const rr=await api({action:"data"});if(rr&&rr.ok){S.data=rr;saveCache(rr);}toast("Onaylandı ✓");render();}else toast((j&&j.error)||"Onaylanamadı");}catch(e){toast("Bağlantı hatası");}}
  else if(a==="chooser"){if(v==="sifre")window.PHOTOS=[];S.sheet=v;render();}
  else if(a==="close"){S.sheet=null;S.pdfSrc=null;render();}
  else if(a==="aiPdfAc"){const u=el.getAttribute("data-url");const id=(String(u).match(/[-\w]{25,}/)||[])[0];if(id){S.pdfSrc="https://drive.google.com/file/d/"+id+"/preview";S.pdfDoc="";S.pdfAd=el.getAttribute("data-ad")||"Teklif";S.sheet="pdfview";render();}else if(u){window.open(u,"_blank");}}
