@@ -549,10 +549,10 @@ function ekstrePdf(tk){
  const M=n=>"$"+Math.round(Number(n)||0).toLocaleString("tr-TR");
  const dd=s=>{ if(!s)return""; const p=String(s).split("-"); return p.length===3?(p[2]+"."+p[1]+"."+p[0]):String(s); };
  const t0=new Date(), tg=("0"+t0.getDate()).slice(-2)+"."+("0"+(t0.getMonth()+1)).slice(-2)+"."+t0.getFullYear();
- const all=(d.ekstre||[]).slice(); let rows="",run=0;   // TÜM hareketler (kırpma yok, PDF çok sayfaya bölünür)
+ const all=(d.ekstre||[]).slice(); let run=0; const ROWS=[];   // TÜM hareketler, A4'e ölçülerek sayfalanır
  for(let i=0;i<all.length;i++){ const h=all[i]; run+=(h.borc||0)-(h.alacak||0); const f=(h.borc||0)>0;
-  rows+='<tr><td class="tar">'+dd(h.tarih)+'</td><td>'+esc(stripFoto(h.aciklama)||h.tip||"")+'</td><td class="r '+(f?'borc':'dash')+'">'+(f?M(h.borc):"—")+'</td><td class="r '+(!f&&(h.alacak||0)>0?'alacak':'dash')+'">'+(!f&&(h.alacak||0)>0?M(h.alacak):"—")+'</td><td class="r bk">'+M(run)+'</td></tr>'; }
- if(!all.length) rows='<tr><td colspan="5" style="text-align:center;color:#888;padding:14px;">Hareket kaydı yok.</td></tr>';
+  ROWS.push('<tr><td class="tar">'+dd(h.tarih)+'</td><td>'+esc(stripFoto(h.aciklama)||h.tip||"")+'</td><td class="r '+(f?'borc':'dash')+'">'+(f?M(h.borc):"—")+'</td><td class="r '+(!f&&(h.alacak||0)>0?'alacak':'dash')+'">'+(!f&&(h.alacak||0)>0?M(h.alacak):"—")+'</td><td class="r bk">'+M(run)+'</td></tr>'); }
+ if(!ROWS.length) ROWS.push('<tr><td colspan="5" style="text-align:center;color:#888;padding:14px;">Hareket kaydı yok.</td></tr>');
  const tFat=Number(o.toplamFatura)||0, tTah=Number(o.toplamTahsilat)||0, tBak=(o.bakiye!=null?Number(o.bakiye):run);
  let tkHtml=""; const tks=(tk===false)?[]:(d.taksitler||[]).filter(t=>t.durum!=="Ödendi"&&((t.kalan!=null?t.kalan:t.tutar)>0));
  if(tks.length){ const r=tks.map(t=>{const kal=(t.kalan!=null?t.kalan:t.tutar);return '<tr><td class="tar">'+dd(t.vade)+'</td><td>Taksit '+esc(t.taksit||"")+(t.odenen>0?' · '+M(t.odenen)+'/'+M(t.tutar)+' ödendi':'')+'</td><td><span class="pill">'+esc(String(t.durum||"Bekliyor").toLocaleUpperCase("tr"))+'</span></td><td class="r bk">'+M(kal)+'</td></tr>';}).join("");
@@ -560,16 +560,21 @@ function ekstrePdf(tk){
  const CSS=`
   :root{--ink:#1f242b;--slate:#2f343c;--muted:#737a84;--line:#e4e6ea;--soft:#f6f7f9;--green:#1F8B4C;--borc:#981224;--brand:#981224}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  @page{size:letter;margin:0}
+  @page{size:A4;margin:0}
   body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#54585e;color:var(--ink)}
   .bar{position:sticky;top:0;display:flex;align-items:center;gap:14px;background:#1b1b1b;color:#ddd;padding:11px 16px;font-size:12.5px}
   .bar button{background:#981224;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer}
   .bar span{color:#9aa0a6}
   @media print{.bar{display:none}}
-  .page{position:relative;width:215.9mm;min-height:279.4mm;margin:14px auto;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.45);display:flex;flex-direction:column}
+  .page{position:relative;width:210mm;height:297mm;margin:14px auto;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.45);overflow:hidden;page-break-after:always;break-after:page}
+  .page:last-child{page-break-after:auto;break-after:auto}
+  .printing .page{margin:0 auto;box-shadow:none}
   tbody tr{page-break-inside:avoid}
   @media print{.page{margin:0;box-shadow:none}}
-  .lh{position:relative;height:128px;flex-shrink:0}
+  .lh{position:relative;height:128px}
+  .lh2{height:46px;background:var(--slate);display:flex;align-items:center;justify-content:space-between;padding:0 46px}
+  .lh2 .wm{color:#fff;font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;letter-spacing:.2px}
+  .lh2 .dv{color:#cfd2d6;font-size:10px;font-weight:600;letter-spacing:.2px}
   .lh .band{position:absolute;left:0;top:0;width:53%;height:100%;background:var(--slate);display:flex;align-items:center;padding-left:50px}
   .lh .tab{position:absolute;right:0;top:0;width:92px;height:100%;background:var(--slate)}
   .lh .title{position:absolute;right:120px;top:0;height:100%;display:flex;flex-direction:column;justify-content:center;text-align:right;font-family:'Cormorant Garamond',serif;color:var(--slate);font-size:31px;font-weight:600;letter-spacing:3px;line-height:1.08}
@@ -578,8 +583,8 @@ function ekstrePdf(tk){
   .logo .est{display:block;font-family:'Montserrat',sans-serif;font-weight:700;color:#fff;font-size:8.5px;letter-spacing:4px;text-align:center;margin-top:5px}
   .logo:before{content:"";position:absolute;left:0;top:2px;bottom:-2px;width:25px;border-left:3px solid #fff;border-bottom:3px solid #fff}
   .logo:after{content:"";position:absolute;right:0;top:-2px;bottom:2px;width:25px;border-right:3px solid #fff;border-top:3px solid #fff}
-  .accent{height:5px;background:linear-gradient(90deg,var(--brand) 0 62%,var(--slate) 62% 100%);flex-shrink:0}
-  .body{flex:1;padding:30px 46px 26px}
+  .accent{height:5px;background:linear-gradient(90deg,var(--brand) 0 62%,var(--slate) 62% 100%)}
+  .body{padding:26px 46px 0}
   .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:20px}
   .cust .lbl{font-size:9px;letter-spacing:1.8px;color:var(--brand);font-weight:800}
   .cust .nm{font-size:21px;font-weight:800;color:var(--ink);margin:4px 0 5px;letter-spacing:-.3px}
@@ -607,32 +612,42 @@ function ekstrePdf(tk){
   .tkblock{margin-top:16px}
   .pill{display:inline-block;font-size:8px;font-weight:800;padding:2px 8px;border-radius:20px;background:#fdf0d9;color:#9a6b00;letter-spacing:.3px}
   .note{margin-top:16px;font-size:9px;color:#9aa0a6}
-  .botbar{margin-top:auto;background:var(--slate);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:15px 50px;font-size:10.5px;font-weight:600;letter-spacing:.4px;flex-shrink:0}
+  .botbar{position:absolute;left:0;right:0;bottom:0;background:var(--slate);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:13px 46px;font-size:10.5px;font-weight:600;letter-spacing:.4px}
   .botbar svg{display:block}
+  .pageno{position:absolute;right:46px;bottom:54px;font-size:9px;color:#9aa0a6;font-weight:700;letter-spacing:.3px}
 `;
+ const THEAD='<tr><th style="width:78px">Tarih</th><th>Açıklama</th><th class="r">Borç</th><th class="r">Alacak</th><th class="r">Bakiye</th></tr>';
+ const SUMHTML='<div class="row1"><div class="cust"><div class="lbl">CARİ HESAP</div><div class="nm">'+esc(musteri)+'</div></div><div class="meta">Ekstre tarihi: <b>'+tg+'</b><br>Para birimi: <b>USD ($)</b><br>Dönem: <b>Tüm hareketler</b></div></div><div class="sum"><div class="c"><span>Toplam Fatura</span><b>'+M(tFat)+'</b></div><div class="c"><span>Toplam Tahsilat</span><b class="g">'+M(tTah)+'</b></div><div class="c bak"><span>Güncel Bakiye</span><b>'+M(tBak)+'</b></div></div>';
+ const BODYOPEN_FULL='<div class="accent"></div><div class="body">'+SUMHTML+'<div class="sh">Hesap Hareketleri</div><table><thead>'+THEAD+'</thead><tbody>';
+ const BODYOPEN_CONT='<div class="accent"></div><div class="body"><div class="sh">Hesap Hareketleri (devam)</div><table><thead>'+THEAD+'</thead><tbody>';
+ const BODYCLOSE='</tbody></table><div class="tail"></div></div>';
+ const FULLHEAD='<div class="lh"><div class="band"><div class="logo"><span class="wm">ersa machinery</span><span class="est">ESTD 2021</span></div></div><div class="title">CARİ HESAP<br>EKSTRESİ</div><div class="tab"></div></div>';
+ const COMPACTHEAD='<div class="lh2"><span class="wm">ersa machinery</span><span class="dv">Cari Ekstre — devam · '+esc(musteri)+'</span></div>';
+ const BOTBAR='<div class="botbar"><div>info@ersamachinery.com</div><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.4 12 4l9 7.4"/><path d="M5.5 9.8V20h13V9.8"/></svg><div>www.ersamachinery.com</div></div>';
+ const TFOOT='<tr><td colspan="2">TOPLAM</td><td class="r borc">'+M(tFat)+'</td><td class="r alacak">'+M(tTah)+'</td><td class="r bk">'+M(tBak)+'</td></tr>';
+ const NOTE='<div class="note">Bu ekstre bilgilendirme amaçlıdır. Mutabakat için muhasebe departmanımızla iletişime geçiniz.</div>';
+ const TAIL=tkHtml+NOTE;
  const doc='<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cari Ekstre · '+esc(musteri)+'</title>'
   +'<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">'
   +'<style>'+CSS+'</style></head><body>'
-  +'<div class="page">'
-    +'<div class="lh"><div class="band"><div class="logo"><span class="wm">ersa machinery</span><span class="est">ESTD 2021</span></div></div><div class="title">CARİ HESAP<br>EKSTRESİ</div><div class="tab"></div></div>'
-    +'<div class="accent"></div>'
-    +'<div class="body">'
-      +'<div class="row1"><div class="cust"><div class="lbl">CARİ HESAP</div><div class="nm">'+esc(musteri)+'</div></div>'
-      +'<div class="meta">Ekstre tarihi: <b>'+tg+'</b><br>Para birimi: <b>USD ($)</b><br>Dönem: <b>Tüm hareketler</b></div></div>'
-      +'<div class="sum"><div class="c"><span>Toplam Fatura</span><b>'+M(tFat)+'</b></div><div class="c"><span>Toplam Tahsilat</span><b class="g">'+M(tTah)+'</b></div><div class="c bak"><span>Güncel Bakiye</span><b>'+M(tBak)+'</b></div></div>'
-      +'<div class="sh">Hesap Hareketleri</div>'
-      +'<table><thead><tr><th style="width:78px">Tarih</th><th>Açıklama</th><th class="r">Borç</th><th class="r">Alacak</th><th class="r">Bakiye</th></tr></thead><tbody>'+rows+'</tbody>'
-      +'<tfoot><tr><td colspan="2">TOPLAM</td><td class="r borc">'+M(tFat)+'</td><td class="r alacak">'+M(tTah)+'</td><td class="r bk">'+M(tBak)+'</td></tr></tfoot></table>'
-      +tkHtml
-      +'<div class="note">Bu ekstre bilgilendirme amaçlıdır. Mutabakat için muhasebe departmanımızla iletişime geçiniz.</div>'
-    +'</div>'
-    +'<div class="botbar"><div>info@ersamachinery.com</div><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.4 12 4l9 7.4"/><path d="M5.5 9.8V20h13V9.8"/></svg><div>www.ersamachinery.com</div></div>'
-  +'</div>'
+  +'<div id="pages"></div>'
   +'<scr'+'ipt src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></scr'+'ipt>'
-  +'<scr'+'ipt>var FN='+JSON.stringify("Cari-Ekstre-"+String(musteri||"Musteri").replace(/[^\wÀ-ſ -]/g,"").trim()+".pdf")+';'
-    +'function fitp(){var p=document.querySelector(".page");if(!p)return;p.style.zoom=1;var pw=p.offsetWidth,vw=document.documentElement.clientWidth;p.style.zoom=Math.min(1,vw/pw);}'
-    +'window.addEventListener("resize",fitp);window.addEventListener("load",fitp);setTimeout(fitp,250);setTimeout(fitp,1200);'
-    +'function indirPDF(){if(typeof html2pdf==="undefined"){alert("PDF hazırlanıyor, birkaç saniye sonra tekrar deneyin.");return;}var p=document.querySelector(".page");var z=p.style.zoom;p.style.zoom=1;html2pdf().set({margin:0,filename:FN,image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"letter",orientation:"portrait"},pagebreak:{mode:["css","legacy"],avoid:"tr"}}).from(p).save().then(function(){p.style.zoom=z;}).catch(function(){p.style.zoom=z;});}'
+  +'<scr'+'ipt>'
+    +'var FN='+JSON.stringify("Cari-Ekstre-"+String(musteri||"Musteri").replace(/[^\wÀ-ſ -]/g,"").trim()+".pdf")+';'
+    +'var ROWS='+JSON.stringify(ROWS)+';'
+    +'var THEAD='+JSON.stringify(THEAD)+',TFOOT='+JSON.stringify(TFOOT)+',TAIL='+JSON.stringify(TAIL)+';'
+    +'var FULLHEAD='+JSON.stringify(FULLHEAD)+',COMPACTHEAD='+JSON.stringify(COMPACTHEAD)+',BOTBAR='+JSON.stringify(BOTBAR)+';'
+    +'var BODYOPEN_FULL='+JSON.stringify(BODYOPEN_FULL)+',BODYOPEN_CONT='+JSON.stringify(BODYOPEN_CONT)+',BODYCLOSE='+JSON.stringify(BODYCLOSE)+';'
+    +'function lim(p){var bb=p.querySelector(".botbar");var rsv=(bb?bb.offsetHeight:46)+44;return p.getBoundingClientRect().top+p.clientHeight-rsv;}'
+    +'function mp(first){var pg=document.createElement("div");pg.className="page";pg.innerHTML=(first?FULLHEAD:COMPACTHEAD)+(first?BODYOPEN_FULL:BODYOPEN_CONT)+BODYCLOSE+BOTBAR+"<div class=\\"pageno\\"></div>";document.getElementById("pages").appendChild(pg);return pg;}'
+    +'function build(){var host=document.getElementById("pages");host.style.zoom=1;host.innerHTML="";var pages=[];var pg=mp(true);pages.push(pg);var tb=pg.querySelector("tbody");for(var i=0;i<ROWS.length;i++){tb.insertAdjacentHTML("beforeend",ROWS[i]);var last=tb.lastElementChild;if(last.getBoundingClientRect().bottom>lim(pg)&&tb.children.length>1){tb.removeChild(last);pg=mp(false);pages.push(pg);tb=pg.querySelector("tbody");tb.insertAdjacentHTML("beforeend",ROWS[i]);}}'
+      +'var lp=pages[pages.length-1];var tbl=lp.querySelector("table");tbl.insertAdjacentHTML("beforeend","<tfoot>"+TFOOT+"</tfoot>");lp.querySelector(".tail").innerHTML=TAIL;'
+      +'if(lp.querySelector(".tail").getBoundingClientRect().bottom>lim(lp)){var tf=tbl.querySelector("tfoot");if(tf){tbl.removeChild(tf);}lp.querySelector(".tail").innerHTML="";var pg2=mp(false);pages.push(pg2);var sh=pg2.querySelector(".sh");if(sh){sh.textContent="Özet";}var t2=pg2.querySelector("table");t2.insertAdjacentHTML("beforeend","<tfoot>"+TFOOT+"</tfoot>");pg2.querySelector(".tail").innerHTML=TAIL;}'
+      +'var tot=pages.length;for(var k=0;k<tot;k++){pages[k].querySelector(".pageno").textContent="Sayfa "+(k+1)+" / "+tot;}}'
+    +'function fitp(){var host=document.getElementById("pages");var p=host&&host.querySelector(".page");if(!p){return;}host.style.zoom=1;var pw=p.offsetWidth,vw=document.documentElement.clientWidth;host.style.zoom=Math.min(1,vw/pw);}'
+    +'function indirPDF(){if(typeof html2pdf==="undefined"){alert("PDF hazırlanıyor, birkaç saniye sonra tekrar deneyin.");return;}var host=document.getElementById("pages");host.classList.add("printing");var z=host.style.zoom;host.style.zoom=1;html2pdf().set({margin:0,filename:FN,image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css"]}}).from(host).save().then(function(){host.classList.remove("printing");host.style.zoom=z;}).catch(function(){host.classList.remove("printing");host.style.zoom=z;});}'
+    +'function go(){try{build();}catch(e){}fitp();}'
+    +'window.addEventListener("load",go);window.addEventListener("resize",fitp);if(document.fonts&&document.fonts.ready){document.fonts.ready.then(go);}setTimeout(go,400);setTimeout(go,1300);'
   +'</scr'+'ipt>'
   +'</body></html>';
  S.pdfDoc=doc; S.pdfSrc=null; S.pdfAd=musteri; S.sheet="pdfview"; render();
