@@ -377,6 +377,7 @@ function homeView(){
  +(((d.aiTeklifler||[]).length)?(function(){var q=d.aiTeklifler[0]||{};var on=(q.durum==="Onaylandı"||q.durum==="Sözleşme");return '<div class="c tap" data-act="aiTeklifAc" data-ref="'+esc(q.ref||"")+'" style="margin-top:16px;padding:16px;border:1px solid var(--gold);background:linear-gradient(135deg,#2a2208,#1a1a1a);"><div style="display:flex;align-items:center;gap:7px;font-size:9px;letter-spacing:1.2px;font-weight:800;color:var(--gold);">'+ic('star',13,'#F5A623')+' SİZE ÖZEL FİYAT TEKLİFİ'+(d.aiTeklifler.length>1?(" ("+d.aiTeklifler.length+")"):"")+'</div><div style="font-weight:800;font-size:15px;color:#fff;margin-top:8px;line-height:1.25;">'+esc(q.makine||"Fiyat teklifi")+'</div><div style="font-size:18px;font-weight:800;color:var(--gold);margin-top:5px;">'+money(q.satis,q.pb)+'</div><div style="margin-top:11px;background:var(--gold);color:#1a1a1a;border-radius:10px;padding:11px;text-align:center;font-weight:800;font-size:13px;">'+(on?"✓ Onayladınız — Görüntüle":"Teklifi Gör / Onayla →")+'</div></div>';})():'')
  +'<div class="c tap" data-act="push" data-v="lazer" style="margin-top:14px;padding:16px;display:flex;align-items:center;gap:13px;border:1px solid #5a2222;background:linear-gradient(135deg,#2a1212,#171318);position:relative;overflow:hidden;"><div style="position:absolute;top:-20px;right:-20px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(197,21,21,.25),transparent 70%);"></div><div class="sq" style="background:linear-gradient(135deg,#C51515,#981224);box-shadow:0 6px 16px rgba(197,21,21,.4);">'+ic('blade',20,'#fff')+'</div><div style="flex:1;min-width:0;position:relative;"><div style="display:flex;align-items:center;gap:7px;"><span style="font-weight:800;font-size:14.5px;color:#fff;">ERSA Lazer</span><span style="font-size:8.5px;font-weight:800;letter-spacing:.6px;background:var(--gold);color:#1a1505;padding:2px 7px;border-radius:6px;">BIÇAK FİYATI</span></div><div style="font-size:11.5px;color:#c9b9bb;margin-top:2px;">Kalıp çizimini yükle → saniyede metraj &amp; fiyat</div></div>'+ic('cr',17,'#c98')+'</div>'
  +'<div class="c tap" data-act="push" data-v="yedekParca" style="margin-top:10px;padding:15px;display:flex;align-items:center;gap:12px;"><div class="sq" style="background:rgba(59,130,246,.16);">'+ic('box',19,'#5B8DEF')+'</div><div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:14px;color:#fff;">Yedek Parça Talebi</div><div style="font-size:11.5px;color:var(--muted);">Fotoğraf yükle · fiyat/durum öğren</div></div>'+ic('cr',16,'#777')+'</div>'
+ +'<div class="c tap" data-act="push" data-v="kagit" style="margin-top:10px;padding:15px;display:flex;align-items:center;gap:12px;"><div class="sq" style="background:rgba(245,166,35,.16);">'+ic('file',19,'#F5A623')+'</div><div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:14px;color:#fff;">Kağıt &amp; Karton</div><div style="font-size:11.5px;color:var(--muted);">Mukavva · kraft · gri · beyaz — stoktan sipariş</div></div>'+ic('cr',16,'#777')+'</div>'
  +'<button class="tap" data-act="open" data-v="bildir" style="width:100%;margin-top:14px;background:var(--red);color:#fff;border:none;border-radius:14px;padding:15px;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;">'+ic('wallet',18,'#fff')+' Ödeme Bildir</button>'
  +(function(){const o=siparisAktif();if(!o)return'';const cur=asamaIx(o.durum);return '<div class="c tap" data-act="push" data-v="siparisler" style="margin-top:14px;padding:16px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);">AKTİF SİPARİŞ</div><span class="chip chip-r">'+ic('truck',10)+' '+esc(o.durum)+'</span></div><div style="font-weight:700;font-size:14.5px;color:#fff;margin-top:8px;">'+esc(o.makine||'Sipariş')+'</div><div class="prog"><div style="width:'+siparisPct(cur)+'%;"></div></div><div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--muted);"><span>'+(cur+1)+'/'+SIPARIS_ASAMA.length+' aşama</span><span>Takip et ›</span></div></div>';})()
  +'</div>';
@@ -1193,6 +1194,90 @@ function renderLogin(){
 }
 
 /* ---------- render ---------- */
+/* ---------- Kağıt & Karton ---------- */
+function kgSwatch(renk){ return {gri:'#8a8a90',beyaz:'#fafafa',kraft:'#b08d57',pembe:'#e69bb5',mavi:'#6aa3e0',siyah:'#2a2a2a'}[renk]||'#8a8a90'; }
+function kagitCard(p){
+ var sw=kgSwatch(p.renk); var sepet=S.kagitSepet||{}; var q=sepet[p.id]||0; var tuk=!(p.stok>0);
+ var stokTxt=p.stok>0?(p.stok<200?'AZ KALDI':'STOKTA'):'TÜKENDİ';
+ var stokCol=p.stok>0?(p.stok<200?'#F5A623':'#2ED573'):'#E0102B';
+ var stokBg=p.stok>0?(p.stok<200?'rgba(245,166,35,.16)':'rgba(46,213,115,.16)'):'rgba(224,16,43,.16)';
+ var birim=(p.birim==='KG')?'kg':'tabaka';
+ var fiyat=p.fiyat>0?('₺'+Math.round(p.fiyat).toLocaleString('tr-TR')+' /'+birim):'Fiyat sorunuz';
+ var qtyHtml = tuk ? '<div style="font-size:11px;color:#6a6a72;">Stok yok</div>'
+   : (q>0 ? '<div style="display:flex;align-items:center;gap:7px;"><div data-act="kgMinus" data-id="'+p.id+'" style="width:28px;height:28px;border-radius:8px;background:#222;display:flex;align-items:center;justify-content:center;cursor:pointer;">'+ic('x',13,'#aaa')+'</div><span style="font-size:13px;font-weight:700;min-width:20px;text-align:center;color:#fff;">'+q+'</span><div data-act="kgPlus" data-id="'+p.id+'" style="width:28px;height:28px;border-radius:8px;background:#C51515;display:flex;align-items:center;justify-content:center;cursor:pointer;">'+ic('plus',14,'#fff')+'</div></div>'
+       : '<div data-act="kgPlus" data-id="'+p.id+'" style="background:#C51515;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;gap:4px;">'+ic('plus',13,'#fff')+'Ekle</div>');
+ var text=(p.kalinlik+' '+p.cins+' '+p.ebat).toLowerCase();
+ return '<div class="kgcard" data-text="'+esc(text)+'" style="display:flex;align-items:center;gap:11px;background:#16161c;border:1px solid #26262e;border-radius:13px;padding:11px;margin-bottom:8px;'+(tuk?'opacity:.55;':'')+'">'
+   +'<div style="width:42px;height:42px;border-radius:9px;background:'+sw+';border:1px solid rgba(255,255,255,.15);flex-shrink:0;"></div>'
+   +'<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13px;color:#fff;">'+esc(p.kalinlik+' · '+p.cins)+'</div><div style="color:#9a9aa2;font-size:11px;margin-top:1px;">'+esc(p.ebat)+' cm · '+(p.birim==='KG'?'KG':'Tabaka')+'</div>'
+   +'<div style="display:flex;align-items:center;gap:7px;margin-top:5px;flex-wrap:wrap;"><span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;background:'+stokBg+';color:'+stokCol+';">'+stokTxt+'</span><span style="font-size:12px;font-weight:800;color:'+(p.fiyat>0?'#F5A623':'#9a9aa2')+';">'+fiyat+'</span></div></div>'
+   +'<div style="flex-shrink:0;">'+qtyHtml+'</div></div>';
+}
+function kagitView(){
+ var cat=(S.data&&S.data.kagit)||[]; var tur=S.kagitTur||'';
+ var turlar=[['','Tümü'],['gri','Gri'],['beyaz','Beyaz'],['kraft','Kraft'],['pembe','Renkli'],['siyah','Siyah']];
+ var list=cat.filter(function(p){ if(!tur)return true; if(tur==='pembe')return p.renk==='pembe'||p.renk==='mavi'; return p.renk===tur; });
+ var sepet=S.kagitSepet||{}; var n=Object.keys(sepet).reduce(function(a,k){return a+(sepet[k]>0?1:0);},0);
+ var talepN=((S.data&&S.data.kagitTalepler)||[]).length;
+ var chips=turlar.map(function(t){var on=tur===t[0];return '<div data-act="kagitTur" data-v="'+t[0]+'" style="flex:0 0 auto;padding:6px 13px;border-radius:20px;font-size:12px;cursor:pointer;'+(on?'background:#C51515;color:#fff;font-weight:700;':'background:#16161c;border:1px solid #2a2a30;color:#b9b9c0;')+'">'+t[1]+'</div>';}).join('');
+ var cards=list.map(kagitCard).join('')||'<div class="empty" style="padding-top:40px;">'+ic('file',28,'#5A5A5A')+'<div style="margin-top:8px;">Bu filtrede ürün yok.</div></div>';
+ return '<div class="pad stg" style="padding-bottom:100px;"><div class="back" data-act="back">'+ic('cl',18)+' Anasayfa</div>'
+  +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;"><div class="h1">Kağıt &amp; Karton</div><div data-act="push" data-v="kagitTaleplerim" style="font-size:11.5px;color:var(--gold);font-weight:700;cursor:pointer;white-space:nowrap;">Taleplerim'+(talepN?' ('+talepN+')':'')+' ›</div></div>'
+  +'<div class="sub">Mukavva · kraft · gri · beyaz — stoktan sipariş</div>'
+  +'<input id="kgsearch" oninput="kagitFilter()" placeholder="kalınlık · cins · ebat ara…" style="width:100%;margin-top:12px;background:#16161c;border:1px solid #2a2a30;border-radius:11px;padding:11px 13px;color:#fff;font-size:14px;outline:none;">'
+  +'<div style="display:flex;gap:7px;overflow-x:auto;padding:11px 0 6px;">'+chips+'</div>'
+  +'<div id="kglist">'+cards+'</div>'
+  +(n?'<div data-act="push" data-v="kagitSepet" style="position:fixed;left:50%;transform:translateX(-50%);bottom:78px;width:calc(100% - 28px);max-width:492px;background:#C51515;border-radius:13px;padding:13px;text-align:center;font-weight:800;font-size:14px;color:#fff;z-index:6;box-shadow:0 6px 18px rgba(197,21,21,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">'+ic('box',17,'#fff')+' Sepetim ('+n+') · Talep Gönder</div>':'')
+  +'</div>';
+}
+window.kagitFilter=function(){ var q=((document.getElementById('kgsearch')||{}).value||'').toLowerCase().trim(); var cards=document.querySelectorAll('#kglist .kgcard'); for(var i=0;i<cards.length;i++){ var t=cards[i].getAttribute('data-text')||''; cards[i].style.display=(!q||t.indexOf(q)>=0)?'':'none'; } };
+window.kagitAdresSet=function(v){ S.kagitAdres=v; };
+window.kagitNotSet=function(v){ S.kagitNot=v; };
+function kagitSepetView(){
+ var cat=(S.data&&S.data.kagit)||[]; var map={}; cat.forEach(function(p){map[p.id]=p;});
+ var sepet=S.kagitSepet||{}; var ids=Object.keys(sepet).filter(function(k){return sepet[k]>0;});
+ if(!ids.length) return '<div class="pad stg"><div class="back" data-act="push" data-v="kagit">'+ic('cl',18)+' Katalog</div><div class="empty" style="padding-top:80px;">'+ic('box',28,'#5A5A5A')+'<div style="margin-top:8px;">Sepetiniz boş.</div></div></div>';
+ var tutar=0,priced=true;
+ var rows=ids.map(function(id){ var p=map[id]; if(!p)return''; var q=sepet[id]; if(p.fiyat>0)tutar+=p.fiyat*q; else priced=false;
+   return '<div style="display:flex;align-items:center;gap:10px;border-bottom:1px solid #1f1f26;padding:11px 0;"><div style="width:34px;height:34px;border-radius:8px;background:'+kgSwatch(p.renk)+';flex-shrink:0;border:1px solid rgba(255,255,255,.12);"></div><div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13px;color:#fff;">'+esc(p.kalinlik+' '+p.cins)+'</div><div style="color:#9a9aa2;font-size:11px;">'+esc(p.ebat)+' · '+(p.birim==='KG'?'kg':'tabaka')+(p.fiyat>0?' · ₺'+Math.round(p.fiyat).toLocaleString("tr-TR"):'')+'</div></div>'
+    +'<div style="display:flex;align-items:center;gap:6px;"><div data-act="kgMinus" data-id="'+id+'" style="width:26px;height:26px;border-radius:7px;background:#222;display:flex;align-items:center;justify-content:center;cursor:pointer;">'+ic('x',12,'#aaa')+'</div><span style="font-size:13px;font-weight:700;min-width:20px;text-align:center;color:#fff;">'+q+'</span><div data-act="kgPlus" data-id="'+id+'" style="width:26px;height:26px;border-radius:7px;background:#C51515;display:flex;align-items:center;justify-content:center;cursor:pointer;">'+ic('plus',13,'#fff')+'</div></div>'
+    +'<div data-act="kgDel" data-id="'+id+'" style="cursor:pointer;flex-shrink:0;">'+ic('x',16,'#E0102B')+'</div></div>';
+ }).join('');
+ return '<div class="pad stg" style="padding-bottom:40px;"><div class="back" data-act="push" data-v="kagit">'+ic('cl',18)+' Katalog</div><div class="h1" style="margin-top:4px;">Talebim</div><div class="sub">ERSA fiyatlandırıp onayınıza gönderecek</div>'
+  +'<div style="margin-top:10px;">'+rows+'</div>'
+  +(function(){
+     if(S.kagitAdres==null){var lt=((S.data&&S.data.kagitTalepler)||[])[0];S.kagitAdres=(lt&&lt.adres)||'';}
+     var od=S.kagitOdeme||'nakit', vade=S.kagitVade||2, factor=1, ekLbl='';
+     if(od==='kart'){factor=1.035;ekLbl='Kredi kartı komisyonu (+%3,5)';}
+     else if(od==='cek'){factor=1+0.05*vade;ekLbl='Çek vade farkı (+%'+(5*vade)+')';}
+     var ek=Math.round(tutar*(factor-1)), fin=Math.round(tutar*factor);
+     var ods=[['nakit','Nakit'],['kart','Kredi Kartı'],['cek','Çek']];
+     var chips=ods.map(function(o){var on=od===o[0];return '<div data-act="kagitOdeme" data-v="'+o[0]+'" style="flex:1;text-align:center;padding:10px;border-radius:10px;cursor:pointer;font-size:12.5px;font-weight:700;'+(on?'background:#C51515;color:#fff;':'background:#16161c;border:1px solid #2a2a30;color:#b9b9c0;')+'">'+o[1]+'</div>';}).join('');
+     var vadeBox = (od==='cek') ? '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;background:#16161c;border:1px solid #2a2a30;border-radius:10px;padding:9px 12px;"><span style="font-size:12.5px;color:#c7c7cf;">Çek vadesi (aylık %5 fark)</span><div style="display:flex;align-items:center;gap:11px;"><div data-act="kagitVadeChg" data-v="-1" style="width:28px;height:28px;border-radius:8px;background:#222;display:flex;align-items:center;justify-content:center;cursor:pointer;">'+ic('x',12,'#aaa')+'</div><span style="font-size:14px;font-weight:800;color:#fff;min-width:46px;text-align:center;">'+vade+' ay</span><div data-act="kagitVadeChg" data-v="1" style="width:28px;height:28px;border-radius:8px;background:#C51515;display:flex;align-items:center;justify-content:center;cursor:pointer;">'+ic('plus',13,'#fff')+'</div></div></div>' : '';
+     var totalBox = priced
+       ? '<div style="margin-top:12px;background:#16161c;border:1px solid #2a2a30;border-radius:12px;padding:12px;"><div style="display:flex;justify-content:space-between;font-size:12.5px;color:#9a9aa2;"><span>Ara toplam</span><span>₺'+Math.round(tutar).toLocaleString("tr-TR")+'</span></div>'+(ek?'<div style="display:flex;justify-content:space-between;font-size:12px;color:#F5A623;margin-top:5px;"><span>'+ekLbl+'</span><span>+₺'+ek.toLocaleString("tr-TR")+'</span></div>':'')+'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #2a2a30;"><span style="font-size:13px;font-weight:700;color:#fff;">Toplam</span><span style="color:#F5A623;font-size:19px;font-weight:800;">₺'+fin.toLocaleString("tr-TR")+'</span></div></div>'
+       : '<div style="margin-top:12px;font-size:11.5px;color:#9a9aa2;">Fiyatsız ürün var; ERSA fiyatlandırıp '+(od==='cek'?'çek vade farkıyla ':od==='kart'?'kart komisyonuyla ':'')+'onayınıza dönecek.</div>';
+     return '<label style="display:block;margin-top:14px;margin-bottom:6px;font-size:12px;color:#9a9aa2;font-weight:700;">Teslimat adresi *</label>'
+       +'<textarea oninput="kagitAdresSet(this.value)" placeholder="Mahalle, cadde, no, ilçe / il…" style="width:100%;min-height:58px;background:#16161c;border:1px solid #2a2a30;border-radius:11px;padding:11px;color:#fff;font-size:14px;outline:none;resize:vertical;">'+esc(S.kagitAdres||'')+'</textarea>'
+       +'<label style="display:block;margin-top:12px;margin-bottom:6px;font-size:12px;color:#9a9aa2;font-weight:700;">Ödeme yöntemi</label><div style="display:flex;gap:7px;">'+chips+'</div>'+vadeBox+totalBox
+       +'<textarea oninput="kagitNotSet(this.value)" placeholder="Ek not (opsiyonel)…" style="width:100%;margin-top:10px;min-height:50px;background:#16161c;border:1px solid #2a2a30;border-radius:11px;padding:11px;color:#fff;font-size:14px;outline:none;resize:vertical;">'+esc(S.kagitNot||'')+'</textarea>';
+   })()
+  +'<button data-act="kagitGonder" style="width:100%;margin-top:12px;border:none;border-radius:13px;padding:14px;background:#2ED573;color:#06351c;font-weight:800;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">'+ic('send',17,'#06351c')+' Talebi Gönder</button>'
+  +'<div style="text-align:center;color:#6a6a72;font-size:10.5px;margin-top:8px;">Taleplerim\'den durumu takip edebilirsiniz</div></div>';
+}
+function kagitTaleplerimView(){
+ var list=(S.data&&S.data.kagitTalepler)||[];
+ var DB={'Yeni':{c:'#F5A623',bg:'rgba(245,166,35,.16)',t:'Beklemede'},'Fiyatlandı':{c:'#5B8DEF',bg:'rgba(91,141,239,.16)',t:'Fiyat verildi'},'Onaylandı':{c:'#2ED573',bg:'rgba(46,213,115,.16)',t:'Onaylandı'},'İptal':{c:'#9a9aa2',bg:'rgba(150,150,160,.16)',t:'İptal'}};
+ var cards=list.map(function(t){ var d=DB[t.durum]||DB['Yeni']; var ad=(t.kalemler&&t.kalemler.length?t.kalemler.length+' kalem':'Talep');
+   return '<div class="c" style="padding:14px;margin-bottom:9px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;"><div style="min-width:0;"><div style="font-weight:700;font-size:13px;color:#fff;">'+esc(ad)+'</div><div style="color:#9a9aa2;font-size:11px;margin-top:2px;">'+esc(t.zaman)+'</div></div><span style="font-size:9.5px;font-weight:800;padding:3px 9px;border-radius:20px;background:'+d.bg+';color:'+d.c+';flex-shrink:0;">'+d.t+'</span></div>'
+   +'<div style="font-size:11.5px;color:#c7c7cf;margin-top:8px;line-height:1.5;">'+esc(t.ozet)+'</div>'
+   +((t.odeme||t.adres)?'<div style="font-size:11px;color:#9a9aa2;margin-top:6px;line-height:1.5;">'+(t.odeme?ic('wallet',12,'#9a9aa2')+' '+esc(t.odeme):'')+(t.adres?'<br>'+ic('truck',12,'#9a9aa2')+' '+esc(t.adres):'')+'</div>':'')
+   +(t.tutar>0?'<div style="margin-top:8px;font-weight:800;color:#F5A623;font-size:15px;">₺'+Math.round(t.tutar).toLocaleString("tr-TR")+'</div>':'')
+   +(t.yanit?'<div style="margin-top:8px;background:#11203a;border-radius:9px;padding:9px;font-size:11.5px;color:#cfe0ff;display:flex;gap:6px;">'+ic('info',13,'#9db8f0')+'<span>'+esc(t.yanit)+'</span></div>':'')
+   +'</div>';
+ }).join('')||'<div class="empty" style="padding-top:70px;">'+ic('file',28,'#5A5A5A')+'<div style="margin-top:8px;">Henüz kağıt talebiniz yok.</div></div>';
+ return '<div class="pad stg"><div class="back" data-act="push" data-v="kagit">'+ic('cl',18)+' Katalog</div><div class="h1" style="margin-top:4px;">Kağıt Taleplerim</div><div style="margin-top:12px;">'+cards+'</div></div>';
+}
 function nav(){const it=[["home","Anasayfa","home","tab"],["fiyatteklif","Tekliflerim","tag","tab"],["bildir","Ödeme","wallet","open"],["hesap","Hesabım","user","tab"]];
  const act=S.pushed?((S.pushed.t==='aiTeklifDetay')?'fiyatteklif':'hesap'):S.tab;
  return '<div class="navwrap">'+it.map(function(t){var on=(t[3]==='tab'&&act===t[0]);return '<div class="nslot '+(on?'on':'')+'" data-act="'+t[3]+'" data-v="'+t[0]+'">'+ic(t[2],21,on?'#C51515':'#8A8A8A')+'<span>'+t[1]+'</span></div>';}).join('')+'</div>';}
@@ -1200,7 +1285,7 @@ function render(){
  if(!S.authed){renderLogin();return;}
  let h;
  if(S.loading||!S.data){h='<div class="pad"><div class="empty" style="padding-top:150px;">'+ic('refresh',30,'#5A5A5A')+'<div style="margin-top:10px;">Yükleniyor…</div></div></div>';}
- else if(S.pushed){const p=S.pushed;h=p.t==='aiTeklifDetay'?aiTeklifDetay(p.ref):p.t==='bildirimler'?bildirimlerView():p.t==='cari'?cariView():p.t==='taksitler'?taksitlerView():p.t==='odemelerim'?odemelerimView():p.t==='makbuz'?makbuzView(p.v):p.t==='teklifDetay'?teklifDetay(p.v):p.t==='talepDetay'?talepDetay(p.kind,p.v):p.t==='siparisler'?siparislerView():p.t==='siparisDetay'?siparisDetay(p.v):p.t==='lazer'?lazerView():p.t==='lazerSiparislerim'?lazerSiparislerimView():p.t==='lazerSipDetay'?lazerSipDetayView(p.id):p.t==='lazerCizim'?lazerCizimView():p.t==='lazerEkstre'?lazerEkstreView():p.t==='yedekParca'?yedekParcaView():p.t==='yedekParcaDetay'?yedekParcaDetayView(p.v):homeView();}
+ else if(S.pushed){const p=S.pushed;h=p.t==='aiTeklifDetay'?aiTeklifDetay(p.ref):p.t==='bildirimler'?bildirimlerView():p.t==='cari'?cariView():p.t==='taksitler'?taksitlerView():p.t==='odemelerim'?odemelerimView():p.t==='makbuz'?makbuzView(p.v):p.t==='teklifDetay'?teklifDetay(p.v):p.t==='talepDetay'?talepDetay(p.kind,p.v):p.t==='siparisler'?siparislerView():p.t==='siparisDetay'?siparisDetay(p.v):p.t==='lazer'?lazerView():p.t==='lazerSiparislerim'?lazerSiparislerimView():p.t==='lazerSipDetay'?lazerSipDetayView(p.id):p.t==='lazerCizim'?lazerCizimView():p.t==='lazerEkstre'?lazerEkstreView():p.t==='yedekParca'?yedekParcaView():p.t==='yedekParcaDetay'?yedekParcaDetayView(p.v):p.t==='kagit'?kagitView():p.t==='kagitSepet'?kagitSepetView():p.t==='kagitTaleplerim'?kagitTaleplerimView():homeView();}
  else h=({home:homeView,taleplerim:taleplerimView,teklifler:taleplerimView,fiyatteklif:fiyatTeklifView,makine:makineView,hesap:hesapView}[S.tab]||homeView)();
  $("scr").innerHTML=h;
  $("navhost").innerHTML=(S.data&&!S.loading)?nav():"";
@@ -1239,6 +1324,13 @@ $("app").addEventListener("click",async function(e){
  else if(a==="lzSiparisOnay"){const r=S.lzResult;const vade=S.lzVade||"nakit";const fy=(r&&r.fiyatlar&&r.fiyatlar[vade])||0;if(!r||!(fy>0)){toast("Fiyat oluşmadı");return;}el.textContent="Gönderiliyor…";el.disabled=true;try{const j=await lazerApi({action:"lazerSiparis",data:{dosya:r.dosya,kesim:r.kesim,bigleme:r.bigleme,perforaj:r.perforaj,toplam:r.toplam,vade:vade,boardM2:r.boardM2,boardEn:r.boardEn,boardBoy:r.boardBoy}});if(j&&j.ok){S.sheet=null;S.lzResult=null;toast("Siparişiniz alındı ✓");S.pushed={t:"lazerSipDetay",id:j.id};await loadLazer();}else{toast((j&&j.error)||"Sipariş verilemedi");render();}}catch(e){toast("Bağlantı hatası");render();}}
  else if(a==="lazerCizimGonder"){const urun=($("lz_urun")||{}).value||"";const acik=($("lz_acik")||{}).value||"";const kayitli=(S.lazer&&S.lazer.telefon)||"";const farkli=S.lzDiffTel?(($("lz_tel2")||{}).value||"").trim():"";const tel=farkli||kayitli;if(!urun.trim()&&!acik.trim()){toast("Ürün veya açıklama yazın");return;}if(S.lzDiffTel&&!farkli){toast("Farklı numarayı yazın");return;}if(!window.LAZER_API_URL){toast("ERSA Lazer adresi tanımlı değil");return;}el.textContent="Gönderiliyor…";try{const j=await lazerApi({action:"lazerCizim",data:{urun:urun,telefon:tel,aciklama:acik,photos:(window.PHOTOS||[]).slice()}});if(j&&j.ok){window.PHOTOS=[];S.lzDiffTel=false;toast("Talebiniz alındı, sizi arayacağız ✓");S.pushed={t:"lazer"};await loadLazer();}else{toast((j&&j.error)||"Gönderilemedi");render();}}catch(e){toast("Bağlantı hatası");render();}}
  else if(a==="back"){S.pushed=null;render();}
+ else if(a==="kagitTur"){S.kagitTur=v;render();}
+ else if(a==="kgPlus"){var kid=el.getAttribute("data-id");S.kagitSepet=S.kagitSepet||{};S.kagitSepet[kid]=(S.kagitSepet[kid]||0)+1;render();}
+ else if(a==="kgMinus"){var kid2=el.getAttribute("data-id");S.kagitSepet=S.kagitSepet||{};S.kagitSepet[kid2]=(S.kagitSepet[kid2]||0)-1;if(S.kagitSepet[kid2]<=0)delete S.kagitSepet[kid2];render();}
+ else if(a==="kgDel"){var kid3=el.getAttribute("data-id");if(S.kagitSepet)delete S.kagitSepet[kid3];render();}
+ else if(a==="kagitOdeme"){S.kagitOdeme=v;if(v==="cek"&&!S.kagitVade)S.kagitVade=2;render();}
+ else if(a==="kagitVadeChg"){var nv=(S.kagitVade||2)+(+v);if(nv<1)nv=1;if(nv>24)nv=24;S.kagitVade=nv;render();}
+ else if(a==="kagitGonder"){var sp=S.kagitSepet||{};var kalemler=Object.keys(sp).filter(function(k){return sp[k]>0;}).map(function(k){return {id:k,adet:sp[k]};});if(!kalemler.length){toast("Sepetiniz boş");return;}var adres=(S.kagitAdres||"").trim();if(!adres){toast("Teslimat adresi girin");return;}var od=S.kagitOdeme||"nakit";var vd=(od==="cek"?(S.kagitVade||2):0);el.textContent="Gönderiliyor…";el.disabled=true;try{const j=await api({action:"kagitTalep",data:{kalemler:kalemler,not:(S.kagitNot||""),adres:adres,odeme:od,vade:vd}});if(j&&j.ok){S.kagitSepet={};S.kagitNot="";const rr=await api({action:"data"});if(rr&&rr.ok){S.data=rr;saveCache(rr);}toast("Talebiniz alındı ✓");S.pushed={t:"kagitTaleplerim"};render();}else{toast((j&&j.error)||"Gönderilemedi");render();}}catch(e){toast("Bağlantı hatası");render();}}
  else if(a==="talF"){S.talF=v;render();}
  else if(a==="talepAc"){const kind=el.getAttribute("data-kind");const i=+v;
    if(kind==="teklif"){S.pushed={t:"teklifDetay",v:i};}
