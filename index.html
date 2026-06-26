@@ -22,6 +22,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',syste
 @keyframes sh{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @keyframes fd{from{opacity:0}to{opacity:1}}
 @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes k_spin{to{transform:rotate(360deg)}}
+@keyframes k_bob{0%,100%{transform:translateY(0) rotate(-2.5deg)}50%{transform:translateY(-2.5px) rotate(2.5deg)}}
+@keyframes k_pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.16)}}
+@keyframes k_drive{0%,100%{transform:translateX(-1.8px)}50%{transform:translateX(1.8px)}}
+@keyframes k_drop{0%,55%{transform:translateY(-3.5px)}74%{transform:translateY(0)}87%{transform:translateY(-1.6px)}100%{transform:translateY(0)}}
+@keyframes k_wig{0%,100%{transform:rotate(-13deg)}50%{transform:rotate(13deg)}}
+@keyframes k_stamp{0%,100%{transform:translateY(-2px) scale(.95)}50%{transform:translateY(0) scale(1)}}
+.kic{transform-origin:center;display:block}
 .stg>*{animation:su .4s cubic-bezier(.2,.7,.2,1) both;}
 .stg>*:nth-child(2){animation-delay:.05s}.stg>*:nth-child(3){animation-delay:.1s}.stg>*:nth-child(4){animation-delay:.15s}.stg>*:nth-child(5){animation-delay:.2s}.stg>*:nth-child(6){animation-delay:.25s}
 .h1{font-weight:700;font-size:22px;color:var(--ink);}
@@ -235,6 +243,19 @@ const SIPARIS_ASAMA=["Sipariş Onaylandı","Tedarik / Üretim","Çin'den Sevkiya
 const asamaIx=d=>{const i=SIPARIS_ASAMA.indexOf((d||"").trim());return i<0?0:i;};
 const siparisPct=cur=>Math.round(cur/(SIPARIS_ASAMA.length-1)*100);
 const siparisAktif=()=>{const l=(S.data&&S.data.siparisler)||[];return l.find(o=>asamaIx(o.durum)<SIPARIS_ASAMA.length-1)||null;};
+const SIPARIS_RENK=[["#E0102B","check","k_pulse"],["#F5A623","gear","k_spin"],["#3B82F6","ship","k_bob"],["#9B6DFF","stamp","k_stamp"],["#00BCD4","truck","k_drive"],["#2ED573","box","k_drop"],["#16A34A","wrench","k_wig"]];
+function hexA(h,a){if(!h||h[0]!=="#")return h;var n=parseInt(h.slice(1),16);return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")";}
+function sipAnim(a){var dur=(a==="k_spin")?"4.5s":(a==="k_drop"?"2.8s":"2.4s"),tf=(a==="k_spin")?"linear":"ease-in-out";return "animation:"+a+" "+dur+" "+tf+" infinite";}
+function gearTeeth(){var o="";for(var i=0;i<8;i++){o+='<rect x="14.4" y="3" width="3.2" height="5" rx="1.2" fill="#fff" transform="rotate('+(i*45)+' 16 16)"/>';}return o;}
+function sipIcon(name,col){var m={
+ check:'<path d="M9.5 16.6l4 4L23 11" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>',
+ gear:gearTeeth()+'<circle cx="16" cy="16" r="8" fill="#fff"/><circle cx="16" cy="16" r="3.3" fill="'+col+'"/>',
+ ship:'<path d="M4 26.4c2 0 2.1-1.3 4.1-1.3s2.1 1.3 4.1 1.3 2.1-1.3 4.1-1.3 2.1 1.3 4.1 1.3 2.1-1.3 4.1-1.3" stroke="rgba(255,255,255,.6)" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M5 18.5h22l-3 5.2H8z" fill="#fff"/><rect x="10" y="12" width="6" height="6.5" rx="1" fill="rgba(255,255,255,.72)"/><rect x="17" y="9.5" width="6" height="9" rx="1" fill="#fff"/>',
+ stamp:'<rect x="6.5" y="8" width="19" height="16" rx="2.2" fill="#fff"/><rect x="9.5" y="11.5" width="8" height="1.8" rx=".9" fill="rgba(0,0,0,.16)"/><rect x="9.5" y="15" width="5.5" height="1.8" rx=".9" fill="rgba(0,0,0,.12)"/><circle cx="19" cy="18.5" r="4.6" fill="none" stroke="'+col+'" stroke-width="2.2"/><path d="M16.8 18.6l1.5 1.5 2.7-2.9" stroke="'+col+'" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+ truck:'<rect x="3.5" y="11" width="13" height="10" rx="1.6" fill="#fff"/><path d="M16.5 14h4.2l3.8 3.6V21H16.5z" fill="rgba(255,255,255,.76)"/><rect x="18" y="15.3" width="3.8" height="2.7" rx=".7" fill="'+col+'"/><circle cx="9" cy="22" r="2.5" fill="#222228"/><circle cx="20.2" cy="22" r="2.5" fill="#222228"/><circle cx="9" cy="22" r="1" fill="#fff"/><circle cx="20.2" cy="22" r="1" fill="#fff"/>',
+ box:'<path d="M16 6.5l9.5 4.3v9.4L16 24.5l-9.5-4.3v-9.4z" fill="#fff"/><path d="M16 6.5l9.5 4.3L16 15.2 6.5 10.8z" fill="rgba(255,255,255,.72)"/><circle cx="16" cy="17" r="3.6" fill="'+col+'"/><path d="M14.3 17l1.3 1.3 2.3-2.5" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+ wrench:'<path d="M22 8a4.2 4.2 0 0 1-5.4 5.2l-6.3 6.3 2.5 2.5 6.3-6.3A4.2 4.2 0 0 0 24.6 10.2l-2.1 2.1-2-2 2.1-2.1z" fill="#fff"/><circle cx="22.6" cy="22.6" r="3.4" fill="rgba(255,255,255,.78)"/><circle cx="22.6" cy="22.6" r="1.3" fill="'+col+'"/>'
+};return m[name]||m.check;}
 const AY=["OCA","ŞUB","MAR","NİS","MAY","HAZ","TEM","AĞU","EYL","EKİ","KAS","ARA"];
 function tkParse(v){const d=new Date(v);return isNaN(d)?null:d;}
 function tkDurum(t){if((t.durum||"")==="Ödendi"||(t.kalan!=null&&t.kalan<=0))return"Ödendi";const d=tkParse(t.vade);if(d&&d<new Date(new Date().toDateString()))return"Gecikti";return"Bekliyor";}
@@ -498,10 +519,18 @@ function taksitlerView(){
 /* ---------- SİPARİŞLER ---------- */
 function siparislerView(){
  const list=(S.data.siparisler||[]);
- const cards=list.map((o,i)=>{const cur=asamaIx(o.durum);const bitti=cur>=SIPARIS_ASAMA.length-1;
-  return '<div class="c tap" data-act="siparisDetay" data-v="'+i+'" style="padding:15px;"><div style="display:flex;justify-content:space-between;align-items:center;">'+(bitti?'<span class="chip chip-g">'+ic('check',10)+' Tamamlandı</span>':'<span class="chip chip-r">'+ic('truck',10)+' '+esc(o.durum)+'</span>')+'<span style="font-size:12px;color:var(--red);font-weight:700;">Takip ›</span></div>'
-  +'<div style="font-weight:700;font-size:14.5px;margin:10px 0 1px;">'+esc(o.makine||'Sipariş')+'</div><div class="cs">'+(o.adet?esc(o.adet)+' adet':'')+(o.zaman?' · '+esc(o.zaman):'')+'</div>'
-  +'<div class="prog"><div style="width:'+siparisPct(cur)+'%;"></div></div><div style="display:flex;justify-content:space-between;margin-top:7px;font-size:10px;color:var(--muted);"><span>'+(cur+1)+'/'+SIPARIS_ASAMA.length+' aşama</span><span>%'+siparisPct(cur)+'</span></div></div>';}).join('');
+ const cards=list.map((o,i)=>{const cur=asamaIx(o.durum);const sr=SIPARIS_RENK[cur]||SIPARIS_RENK[0];const col=sr[0];const bitti=cur>=SIPARIS_ASAMA.length-1;const pct=siparisPct(cur);
+  return '<div class="tap" data-act="siparisDetay" data-v="'+i+'" style="background:'+hexA(col,.09)+';border:1px solid '+hexA(col,.38)+';border-left:5px solid '+col+';border-radius:15px;padding:13px 15px;">'
+   +'<div style="display:flex;align-items:center;gap:12px;">'
+     +'<div style="width:46px;height:46px;border-radius:13px;background:'+col+';display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px '+hexA(col,.4)+';"><svg class="kic" style="'+sipAnim(sr[2])+'" width="30" height="30" viewBox="0 0 32 32">'+sipIcon(sr[1],col)+'</svg></div>'
+     +'<div style="flex:1;min-width:0;"><span style="display:inline-flex;align-items:center;background:'+hexA(col,.16)+';color:'+col+';font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;">'+(bitti?'✓ ':'')+esc(o.durum)+'</span>'
+       +'<div style="font-weight:800;font-size:14.5px;color:#fff;margin-top:5px;line-height:1.15;">'+esc(o.makine||'Sipariş')+'</div>'
+       +'<div style="font-size:11.5px;color:var(--muted);margin-top:1px;">'+(o.adet?esc(o.adet)+' adet':'')+(o.zaman?' · '+esc(o.zaman):'')+'</div></div>'
+     +'<span style="font-size:12px;color:'+col+';font-weight:700;align-self:flex-start;">Takip ›</span>'
+   +'</div>'
+   +'<div style="height:6px;background:'+hexA(col,.18)+';border-radius:4px;margin:11px 0 6px;overflow:hidden;"><div style="width:'+Math.max(pct,4)+'%;height:100%;background:'+col+';border-radius:4px;"></div></div>'
+   +'<div style="display:flex;justify-content:space-between;font-size:11px;"><span style="color:'+col+';font-weight:700;">'+(cur+1)+'/'+SIPARIS_ASAMA.length+' aşama</span><span style="color:var(--muted);font-weight:700;">%'+pct+'</span></div>'
+  +'</div>';}).join('');
  return '<div class="pad stg"><div class="back" data-act="back">'+ic('cl',18)+' Geri</div><div class="h1" style="margin-top:4px;">Siparişlerim</div><div class="sub">Makinelerinizin sevkiyat durumu</div>'
  +'<div style="display:flex;flex-direction:column;gap:12px;margin-top:14px;">'+(cards||'<div class="empty">Henüz siparişiniz görünmüyor.</div>')+'</div></div>';
 }
